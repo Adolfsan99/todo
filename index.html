@@ -1,87 +1,58 @@
-<html class=" yodszncom idc0_343">
+<html>
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Todo App</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css">
+
 </head>
 
-<body>
-  <div class="container">
-    <header>
-      <h1 style="display: flex; flex-direction: row;">Todo App<button id="theme-toggle">🌓</button></h1>
-      <div id="current-time"></div>
-    </header>
-    <div class="main-content">
-      <div class="productivity-container">
-        <h2 id="weekly-progress-title">Progreso Semanal</h2>
-        <div id="weekly-progress"></div>
-        <form id="task-form">
-          <input type="text" id="task-input" placeholder="Nueva tarea" required>
-          <input type="number" id="task-value" placeholder="Valor" required>
-          <input type="date" id="task-date" required>
-          <button type="submit">+</button>
-        </form>
-        <div id="tasks-list"></div>
-      </div>
-      <div class="notes-container">
-        <h2>Notas</h2>
-        <textarea id="notes" placeholder="Escribe tus notas aquí..."></textarea>
-      </div>
+<body class="light-mode">
+  <div class="top-bar">
+    <button id="maxValueBtn">💲</button>
+    <div>
+      <h1>Todo App</h1>
+      <div class="time" id="current-time"></div>
     </div>
-    <nav>
-      <button id="tasksBtn"><span class="emoji">📝</span>Tareas</button>
-      <button id="utilitiesBtn"><span class="emoji">💡</span>Utilidades</button>
-      <button id="dataBtn"><span class="emoji">💾</span>Datos</button>
-      <button id="userGuideBtn"><span class="emoji">❓</span>Guía</button>
-      <button id="calendarBtn"><span class="emoji">📅</span> Calendario</button>
-    </nav>
+    <button id="toggleModeBtn">🌓</button>
   </div>
 
-  <!-- Task Modal -->
-  <div id="taskModal" class="modal">
+  <div class="main-content">
+    <div class="left-section">
+      <div class="weekly-progress" id="weeklyProgress">
+        <!-- Day bars will be dynamically generated here -->
+      </div>
+      <div class="add-task">
+        <input type="text" id="taskName" placeholder="Nombre de la tarea">
+        <input type="number" id="taskValue" placeholder="Valor">
+        <input type="date" id="taskStart" placeholder="Fecha de inicio">
+        <input type="date" id="taskEnd" placeholder="Fecha final">
+        <button id="addTaskBtn">+</button>
+      </div>
+    </div>
+    <div class="right-section">
+      <textarea class="notes" id="notesArea" placeholder="Escribe tus notas aquí..."></textarea>
+    </div>
+  </div>
+
+  <div class="tasks" id="tasksContainer">
+    <!-- Tasks will be dynamically generated here -->
+  </div>
+
+  <div class="bottom-buttons">
+    <button id="showAllTasksBtn">📝Tareas</button>
+    <button onclick="alert('Funcionalidad en desarrollo')">💡Utilidades</button>
+    <button onclick="alert('Funcionalidad en desarrollo')">💾Datos</button>
+    <button onclick="alert('Funcionalidad en desarrollo')">❓Guía</button>
+  </div>
+
+  <div id="allTasksModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <h2>Todas las Tareas</h2>
-      <div id="modalTasksList"></div>
-    </div>
-  </div>
-
-  <!-- Calendar Modal -->
-  <div id="calendarModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <div id="calendar-view">
-        <div id="calendar-header">
-          <h2 id="current-month"></h2>
-          <button id="prev-month">&lt;</button>
-          <button id="next-month">&gt;</button>
-        </div>
-        <div id="calendar-grid"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Data Modal -->
-  <div id="dataModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <button id="exportDataBtn">💾Exportar datos</button>
-      <button id="importDataBtn">📲Importar datos</button>
-      <button id="clearDataBtn">🧹Limpiar datos</button>
-    </div>
-  </div>
-
-  <!-- Confirm Clear Data Modal -->
-  <div id="confirmClearModal" class="modal">
-    <div class="modal-content">
-      <h2>Confirmar Limpieza de Datos</h2>
-      <p>Para confirmar, resuelve la siguiente suma:</p>
-      <p id="clearDataChallenge"></p>
-      <input type="number" id="clearDataAnswer" placeholder="Respuesta">
-      <button id="confirmClearBtn">Confirmar</button>
+      <div id="allTasksList"></div>
     </div>
   </div>
 

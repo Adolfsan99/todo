@@ -1,463 +1,175 @@
-body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f0f0f0;
-      color: #333;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .dark-theme {
-      background-color: #222;
-      color: #f0f0f0;
-    }
-
-    .top-bar {
-      background-color: #ffe600;
-      color: white;
-      padding: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .top-bar-center {
-      text-align: center;
-      flex-grow: 1;
-    }
-
-    .top-bar h1 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-
-    #current-time {
-      font-size: 1rem;
-      margin-top: 5px;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .main-content {
-      display: flex;
-      /* flex-direction: column; */
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .productivity-container,
-    .notes-container {
-      flex: 1;
-      background-color: white;
-      border-radius: 8px;
-      padding: 1rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .dark-theme .productivity-container,
-    .dark-theme .notes-container {
-      background-color: #333;
-    }
-
-    h2 {
-      margin-top: 0;
-      color: #c2a100;
-      font-size: 1rem;
-    }
-
-    #weekly-progress {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-
-    .day-progress {
-  text-align: center;
-  width: 30px;
-}
-
-.progress-bar-container {
-  height: 100px;
-  width: 20px;
-  background-color: #9E9E9E;
-  border-radius: 10px;
-  overflow: hidden;
-  margin: 0 auto;
-  display: flex;
-  align-items: flex-end; /* Asegura que la barra crezca desde el fondo */
-}
-
-.progress-bar {
-  width: 100%;
-  height: 0%; /* Empieza con altura 0% */
-  background-color: #4CAF50;
-  transition: height 0.3s;
-}
-
-.day-label {
-  margin-top: 5px;
-  font-size: 0.8rem;
-}
-
-
-    #task-form {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    #task-form input[type="text"] {
-      flex-grow: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      color: #c2a100;
-      background: transparent;
-    }
-
-    #task-date {
-            flex-grow: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      color: #c2a100;
-      background: transparent;
-    }
-
-#task-form input[type="number"] {
-  width: 4rem;
-  flex-grow: 1;
-  padding: 4px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  color: #c2a100;
-  background: transparent;
+ body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
   }
-
-    #task-form button {
-      padding: 8px 16px;
-      background-color: #c2a100;
-      color: 000;
-      border: none;
-      border-radius: 8rem;
-      cursor: pointer;
-    }
-
-    #notes {
-      width: 100%;
-      height: 80%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      resize: vertical;
-      color: #c2a100;
-      background: transparent;
-    }
-
-    .app-sections {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-    }
-
-    .app-sections button {
-      background-color: #ffe600;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 80px;
-      height: 80px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .app-sections button:hover {
-      background-color: #ffe600;
-    }
-
-    .app-sections .emoji {
-      font-size: 1.5rem;
-      margin-bottom: 5px;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.4);
-    }
-
-    .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 600px;
-      border-radius: 8px;
-    }
-
-    .dark-theme .modal-content {
-      background-color: #333;
-      color: #f0f0f0;
-    }
-
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .close:hover,
-    .close:focus {
-      color: #000;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    #date-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    #date-nav button {
-      background-color: #ffe600;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .task-item {
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      padding: 10px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .dark-theme .task-item {
-      background-color: #444;
-    }
-
-    .task-title {
-      flex-grow: 1;
-    }
-
-    .task-value {
-      margin-right: 10px;
-    }
-
-    .task-actions {
-      display: flex;
-      gap: 5px;
-    }
-
-    .task-status {
-      padding: 2px 6px;
-      margin: 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .task-pending {
-      background-color: #d64040;
-    }
-
-    .task-in-progress {
-      background-color: #f7ae4f;
-    }
-
-    .task-completed {
-      background-color: #81c784;
-    }
-
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2rem;
-    }
-
-/* Contenedor principal del calendario */
-#calendar-view {
-  text-align: center;
-  padding: 20px;
-  background-color: #f5f5f5; /* Fondo suave para el contenedor del calendario */
-  border-radius: 8px;
-}
-
-/* Rejilla del calendario */
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px; /* Espacio entre los días */
-  margin-top: 10px;
-}
-
-/* Estilo para cada celda del calendario */
-.calendar-day, .calendar-day-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #ddd;
-  padding: 5px;
-  min-height: 80px;
-  background-color: #fff; /* Fondo blanco para los días */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera */
-  position: relative;
-}
-
-/* Encabezado del día (cabecera de la semana) */
-.calendar-day-header {
-  font-weight: bold;
-  font-size: 0.9rem; /* Tamaño de fuente menor */
-  color: #333; /* Color del texto */
-  background-color: #e0e0e0; /* Fondo gris claro para los encabezados */
-}
-
-/* Estilo para los días del mes */
-.calendar-day {
-  min-height: 80px;
-  background-color: #fff; /* Fondo blanco para los días */
-  border-radius: 4px; /* Bordes redondeados */
-}
-
-/* Día actual */
-.current-day {
-  border: 2px solid #fff700; /* Borde verde para el día actual */
-}
-
-/* Contenedor de tareas del día */
-.calendar-day-tasks {
-  flex: 1;
-  overflow-y: auto; /* Desplazamiento vertical si es necesario */
-  margin-top: 5px;
-}
-
-/* Estilo para las tareas */
-.calendar-task {
-  font-size: 0.8rem; /* Tamaño de fuente ajustado */
-  margin-bottom: 2px; /* Espaciado entre tareas */
-  padding: 4px;
-  border-radius: 4px; /* Bordes redondeados */
-  color: #fff; /* Texto blanco para mayor contraste */
-}
-
-/* Tareas según el estado */
-.calendar-task.Pendiente {
-  background-color: #ff4f4f; /* Rojo para tareas pendientes */
-}
-
-.calendar-task.En-Proceso {
-  background-color: #ffd54f; /* Amarillo para tareas en proceso */
-}
-
-.calendar-task.Completada {
-  background-color: #81c784; /* Verde para tareas completadas */
-}
-
-
-    .calendar-task.Pendiente {
-      color: 000;
-      background-color: #ff4f4f;
-    }
-
-    .calendar-task.En-Proceso {
-      background-color: #ffd54f;
-    }
-
-    .calendar-task.Completada {
-      background-color: #81c784;
-    }
-
-    .current-day {
-      background-color: #e3f2fd;
-      border-radius: 8px;
-    }
-
-    .dark-theme .current-day {
-      background-color: transparent;
-    }
-
-    #theme-toggle {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-
-    #dataModal .modal-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    #dataModal button {
-      width: 200px;
-      padding: 0.8rem;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    #confirmClearModal .modal-content {
-      text-align: center;
-    }
-
-    #confirmClearModal input {
-      margin: 1rem 0;
-      padding: 0.5rem;
-      font-size: 1rem;
-      width: 100px;
-      text-align: center;
-    }
-
-    #confirmClearModal button {
-      margin-top: 1rem;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .calendar-btn {
+  body.light-mode {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  body.dark-mode {
+    background-color: #333;
+    color: #f0f0f0;
+  }
+  .top-bar {
     background-color: #4CAF50;
-    border: none;
     color: white;
-    padding: 10px 20px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar h1 {
+    margin: 0;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 4px;
+    flex-grow: 1;
+  }
+  .top-bar .time {
+    font-size: 0.8em;
+    text-align: center;
   }
 
+.dailyValue{
+      font-size: 0.8em;
+}
+
+  .main-content {
+    display: flex;
+    padding: 20px;
+  }
+  .left-section, .right-section {
+    flex: 1;
+    margin: 10px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .light-mode .left-section, .light-mode .right-section {
+    background-color: white;
+  }
+  .dark-mode .left-section, .dark-mode .right-section {
+    background-color: #444;
+  }
+  .weekly-progress {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .day-bar {
+    width: 30px;
+    height: 100px;
+    border-radius: 5px;
+    position: relative;
+  }
+  .light-mode .day-bar {
+    background-color: #ddd;
+  }
+  .dark-mode .day-bar {
+    background-color: #555;
+  }
+  .day-bar.active {
+    background-color: #4CAF50;
+    border: 2px solid #2E8B57;
+  }
+  .day-bar::after {
+    content: attr(data-day);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .day-bar.active::after {
+    color: #4CAF50;
+    font-weight: bold;
+  }
+  .add-task {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .add-task input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+  }
+  .add-task button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .notes {
+    width: 100%;
+    height: 200px;
+    resize: vertical;
+  }
+  .tasks {
+    margin: 10px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .light-mode .tasks {
+    background-color: white;
+  }
+  .dark-mode .tasks {
+    background-color: #444;
+  }
+  .task {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .task-info {
+    flex-grow: 1;
+  }
+  .task-buttons button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  .status-button {
+    padding: 5px 10px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+    min-width: 100px;
+  }
+  .status-pending {
+    background-color: #FFA500;
+  }
+  .status-in-progress {
+    background-color: #1E90FF;
+  }
+  .status-completed {
+    background-color: #32CD32;
+  }
+  .bottom-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+  .bottom-buttons button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
   .modal {
     display: none;
     position: fixed;
@@ -469,49 +181,27 @@ body {
     overflow: auto;
     background-color: rgba(0,0,0,0.4);
   }
-
   .modal-content {
-    background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    max-width: 600px;
   }
-
+  .light-mode .modal-content {
+    background-color: #fefefe;
+  }
+  .dark-mode .modal-content {
+    background-color: #333;
+  }
   .close {
     color: #aaa;
     float: right;
     font-size: 28px;
     font-weight: bold;
-    cursor: pointer;
   }
-
   .close:hover,
   .close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
   }
-
-  #tasksBtn,#utilitiesBtn,#dataBtn,#userGuideBtn,#calendarBtn {
-    background-color: #0000002b;
-    color: white;
-    padding: 1rem;
-    border: initial;
-    border-radius: 0;
-    margin: 4px;
-    cursor: pointer;
-    font-size: 0.75rem;
-    transition: background-color 0.3s ease;
-    height: 6rem;
-    width: 6rem;
-    border-radius: 100%;
-    word-break: break-word;
-  }
- 
- .emoji {
-    font-size: 2.5rem;
-    width: 6rem;
-  }
-  

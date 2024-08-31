@@ -1,489 +1,289 @@
-    // Variables globales
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || {};
-    let notes = JSON.parse(localStorage.getItem('notes')) || {};
-    let currentDate = new Date();
+    let maxDailyValue = 6;
+    let tasks = [];
+    const daysOfWeek = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
 
-    // Elementos del DOM
-    const weeklyProgressTitle = document.getElementById('weekly-progress-title');
-    const weeklyProgress = document.getElementById('weekly-progress');
-    const taskForm = document.getElementById('task-form');
-    const taskInput = document.getElementById('task-input');
-    const taskValue = document.getElementById('task-value');
-    const taskDate = document.getElementById('task-date');
-    const tasksList = document.getElementById('tasks-list');
-    const notesTextarea = document.getElementById('notes');
-    const currentTimeElement = document.getElementById('current-time');
-    const themeToggle = document.getElementById('theme-toggle');
-    const taskModal = document.getElementById('taskModal');
-    const modalTasksList = document.getElementById('modalTasksList');
-    const calendarModal = document.getElementById('calendarModal');
-    const calendarView = document.getElementById('calendar-view');
-    const currentMonthElement = document.getElementById('current-month');
-    const calendarGrid = document.getElementById('calendar-grid');
-    const prevMonthBtn = document.getElementById('prev-month');
-    const nextMonthBtn = document.getElementById('next-month');
-    const dataModal = document.getElementById('dataModal');
-    const confirmClearModal = document.getElementById('confirmClearModal');
-    const clearDataChallenge = document.getElementById('clearDataChallenge');
-    const clearDataAnswer = document.getElementById('clearDataAnswer');
-    const confirmClearBtn = document.getElementById('confirmClearBtn');
-
-    // Botones de sección
-    const tasksBtn = document.getElementById('tasksBtn');
-    const utilitiesBtn = document.getElementById('utilitiesBtn');
-    const dataBtn = document.getElementById('dataBtn');
-    const userGuideBtn = document.getElementById('userGuideBtn');
-    const calendarBtn = document.getElementById('calendarBtn');
-
-    // Funciones de utilidad
-    function formatDate(date) {
-      return date.toISOString().split('T')[0];
-    }
-
-    function updateCurrentTime() {
+    function updateTime() {
       const now = new Date();
-      currentTimeElement.textContent = now.toLocaleTimeString();
+      const timeString = now.toLocaleTimeString();
+      document.getElementById('current-time').textContent = timeString;
     }
 
-    function showNotification(message) {
-      if (Notification.permission === "granted") {
-        new Notification(message);
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            new Notification(message);
-          }
-        });
-      }
-    }
-
-    // Funciones principales
-    function renderWeeklyProgress() {
-      weeklyProgress.innerHTML = '';
-      const today = new Date();
-      const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+    function initializeWeeklyProgress() {
+      const weeklyProgressElement = document.getElementById('weeklyProgress');
+      const today = new Date().getDay();
 
       for (let i = 0; i < 7; i++) {
-        const date = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + i);
-        const dateString = formatDate(date);
-        const dayTasks = tasks[dateString] || [];
-        const totalValue = dayTasks.reduce((sum, task) => sum + task.value, 0);
-        const completedValue = dayTasks.reduce((sum, task) => {
-          if (task.status === 'completed') {
-            return sum + task.value;
-          } else if (task.status === 'in-progress') {
-            return sum + (task.value / 2);
-          }
-          return sum;
-        }, 0);
-        const progress = totalValue > 0 ? (completedValue / totalValue) * 100 : 0;
-
-        const dayElement = document.createElement('div');
-        dayElement.className = 'day-progress';
-        if (date.toDateString() === today.toDateString()) {
-          dayElement.classList.add('current-day');
+        const dayBar = document.createElement('div');
+        dayBar.className = 'day-bar';
+        dayBar.setAttribute('data-day', daysOfWeek[i]);
+        if (i === today) {
+          dayBar.classList.add('active');
         }
-        dayElement.innerHTML = `
-          <div class="progress-bar-container">
-            <div class="progress-bar" style="height: ${progress}%;"></div>
-          </div>
-          <div class="day-label">${date.toLocaleDateString('es-ES', { weekday: 'short' })}</div>
-        `;
-        weeklyProgress.appendChild(dayElement);
+        weeklyProgressElement.appendChild(dayBar);
       }
+    }
+
+    function updateDailyProgress() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayTasks = tasks.filter(task =>
+        task.startDate <= today && task.endDate >= today
+      );
+
+      let totalValue = 0;
+      todayTasks.forEach(task => {
+        if (task.status === 'completed') totalValue += parseInt(task.value);
+        else if (task.status === 'in-progress') totalValue += parseInt(task.value) / 2;
+      });
+
+      const progressPercentage = (totalValue / maxDailyValue) * 100;
+      const activeBar = document.querySelector('.day-bar.active');
+      if (activeBar) {
+        activeBar.style.background = `linear-gradient(to top, #4CAF50 ${progressPercentage}%, ${document.body.classList.contains('dark-mode') ? '#555' : '#ddd'} ${progressPercentage}%)`;
+      }
+    }
+
+    function addTask() {
+      const name = document.getElementById('taskName').value;
+      const value = document.getElementById('taskValue').value;
+      const startDate = document.getElementById('taskStart').value;
+      const endDate = document.getElementById('taskEnd').value;
+
+      if (!name || !value || !startDate || !endDate) {
+        alert('Por favor, complete todos los campos');
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const todayTasks = tasks.filter(task =>
+        task.startDate <= today && task.endDate >= today
+      );
+
+      let currentDailyValue = todayTasks.reduce((sum, task) => sum + parseInt(task.value), 0);
+
+      if (currentDailyValue + parseInt(value) > maxDailyValue) {
+        alert('No se puede agregar esta tarea. Excedería el valor máximo diario.');
+        return;
+      }
+
+      const newTask = {
+        id: Date.now(),
+        name,
+        value,
+        startDate,
+        endDate,
+        status: 'pending'
+      };
+
+      tasks.push(newTask);
+      renderTasks();
+      updateDailyProgress();
+      saveTasks();
+
+      // Clear input fields
+      document.getElementById('taskName').value = '';
+      document.getElementById('taskValue').value = '';
+      document.getElementById('taskStart').value = '';
+      document.getElementById('taskEnd').value = '';
     }
 
     function renderTasks() {
-      const dateString = formatDate(currentDate);
-      const dayTasks = tasks[dateString] || [];
-      tasksList.innerHTML = '';
-      dayTasks.forEach((task, index) => {
+      const tasksContainer = document.getElementById('tasksContainer');
+      tasksContainer.innerHTML = '';
+
+      const today = new Date().toISOString().split('T')[0];
+      const todayTasks = tasks.filter(task =>
+        task.startDate <= today && task.endDate >= today
+      );
+
+      todayTasks.forEach(task => {
         const taskElement = document.createElement('div');
-        taskElement.className = 'task-item';
+        taskElement.className = 'task';
         taskElement.innerHTML = `
-          <span class="task-title">${task.title}</span>
-          <span class="task-value">${task.value}</span>
-          <span class="task-date">${new Date(task.date).toLocaleDateString()}</span>
-          <div class="task-actions">
-            <span class="task-status task-${task.status}">${task.status}</span>
-            <button class="action-btn edit-task" data-index="${index}">✏️</button>
-            <button class="action-btn delete-task" data-index="${index}">🗑️</button>
+          <div class="task-info">
+            <h3>${task.name}</h3>
+            <p>Valor: $${task.value} | Inicio: ${task.startDate} | Fin: ${task.endDate}</p>
+          </div>
+          <div class="task-buttons">
+            <button class="status-button status-${task.status}" onclick="changeStatus(${task.id})">${getStatusText(task.status)}</button>
+            <button onclick="editTask(${task.id})">✏️</button>
+            <button onclick="deleteTask(${task.id})">🗑️</button>
           </div>
         `;
-        tasksList.appendChild(taskElement);
+        tasksContainer.appendChild(taskElement);
       });
     }
 
-    function addTask(title, value, date) {
-      const dateString = formatDate(new Date(date));
-      if (!tasks[dateString]) {
-        tasks[dateString] = [];
+    function getStatusText(status) {
+      switch (status) {
+        case 'pending': return 'Pendiente';
+        case 'in-progress': return 'En proceso';
+        case 'completed': return 'Completado';
+        default: return 'Pendiente';
       }
-      tasks[dateString].push({ title, value: parseInt(value), status: 'pending', date });
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      renderTasks();
-      renderWeeklyProgress();
-      showNotification(`Nueva tarea creada: ${title}`);
     }
 
-    function deleteTask(index) {
-      const dateString = formatDate(currentDate);
-      tasks[dateString].splice(index, 1);
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      renderTasks();
-      renderWeeklyProgress();
+    function changeStatus(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        switch (task.status) {
+          case 'pending':
+            task.status = 'in-progress';
+            break;
+          case 'in-progress':
+            task.status = 'completed';
+            break;
+          case 'completed':
+            task.status = 'pending';
+            break;
+        }
+        renderTasks();
+        updateDailyProgress();
+        saveTasks();
+      }
     }
 
-    function editTask(index, newTitle, newValue, newDate) {
-      const dateString = formatDate(currentDate);
-      tasks[dateString][index].title = newTitle;
-      tasks[dateString][index].value = parseInt(newValue);
-      tasks[dateString][index].date = newDate;
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      renderTasks();
-      renderWeeklyProgress();
+    function editTask(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        document.getElementById('taskName').value = task.name;
+        document.getElementById('taskValue').value = task.value;
+        document.getElementById('taskStart').value = task.startDate;
+        document.getElementById('taskEnd').value = task.endDate;
+
+        // Remove the old task
+        deleteTask(taskId);
+
+        // The user can now edit the fields and add the task again
+      }
     }
 
-    function toggleTaskStatus(index) {
-      const dateString = formatDate(currentDate);
-      const task = tasks[dateString][index];
-      const statusOrder = ['pending', 'in-progress', 'completed'];
-      const currentStatusIndex = statusOrder.indexOf(task.status);
-      task.status = statusOrder[(currentStatusIndex + 1) % 3];
-      localStorage.setItem('tasks', JSON.stringify(tasks));
+    function deleteTask(taskId) {
+      tasks = tasks.filter(t => t.id !== taskId);
       renderTasks();
-      renderWeeklyProgress();
+      updateDailyProgress();
+      saveTasks();
+    }
+
+    function showAllTasks() {
+      const modal = document.getElementById('allTasksModal');
+      const allTasksList = document.getElementById('allTasksList');
+      allTasksList.innerHTML = '';
+
+      // Group tasks by date
+      const tasksByDate = tasks.reduce((acc, task) => {
+        if (!acc[task.startDate]) {
+          acc[task.startDate] = [];
+        }
+        acc[task.startDate].push(task);
+        return acc;
+      }, {});
+
+      // Render tasks grouped by date
+      for (let date in tasksByDate) {
+        const dateHeader = document.createElement('h3');
+        dateHeader.textContent = date;
+        allTasksList.appendChild(dateHeader);
+
+        tasksByDate[date].forEach(task => {
+          const taskElement = document.createElement('div');
+          taskElement.innerHTML = `
+            <p>${task.name} - Valor: $${task.value} - Estado: ${getStatusText(task.status)}</p>
+          `;
+          allTasksList.appendChild(taskElement);
+        });
+      }
+
+      modal.style.display = 'block';
     }
 
     function saveNotes() {
-      const dateString = formatDate(currentDate);
-      notes[dateString] = notesTextarea.value;
-      localStorage.setItem('notes', JSON.stringify(notes));
+      const notes = document.getElementById('notesArea').value;
+      localStorage.setItem('todoAppNotes', notes);
     }
 
     function loadNotes() {
-      const dateString = formatDate(currentDate);
-      notesTextarea.value = notes[dateString] || '';
+      const notes = localStorage.getItem('todoAppNotes');
+      if (notes) {
+        document.getElementById('notesArea').value = notes;
+      }
     }
 
-    function renderCalendar() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const daysInMonth = lastDay.getDate();
+    function saveTasks() {
+      localStorage.setItem('todoAppTasks', JSON.stringify(tasks));
+    }
 
-      currentMonthElement.textContent = firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-      calendarGrid.innerHTML = '';
-
-      for (let i = 0; i < 7; i++) {
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'calendar-day-header';
-        dayHeader.textContent = new Date(2023, 0, i + 1).toLocaleString('default', { weekday: 'short' });
-        calendarGrid.appendChild(dayHeader);
+    function loadTasks() {
+      const savedTasks = localStorage.getItem('todoAppTasks');
+      if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+        renderTasks();
+        updateDailyProgress();
       }
+    }
 
-      for (let i = 0; i < firstDay.getDay(); i++) {
-        calendarGrid.appendChild(document.createElement('div'));
+    function saveMaxDailyValue() {
+      localStorage.setItem('todoAppMaxDailyValue', maxDailyValue);
+    }
+
+    function loadMaxDailyValue() {
+      const savedMaxDailyValue = localStorage.getItem('todoAppMaxDailyValue');
+      if (savedMaxDailyValue) {
+        maxDailyValue = parseInt(savedMaxDailyValue);
       }
+    }
 
-      for (let i = 1; i <= daysInMonth; i++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        if (i === currentDate.getDate() && month === currentDate.getMonth() && year === currentDate.getFullYear()) {
-          dayElement.classList.add('current-day');
-        }
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      document.body.classList.toggle('light-mode');
+      localStorage.setItem('todoAppDarkMode', document.body.classList.contains('dark-mode'));
+      updateDailyProgress();
+    }
 
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'calendar-day-header';
-        dayHeader.textContent = i;
-        dayElement.appendChild(dayHeader);
-
-        const dateString = formatDate(new Date(year, month, i));
-        const dayTasks = tasks[dateString] || [];
-
-        const taskContainer = document.createElement('div');
-        taskContainer.className = 'calendar-day-tasks';
-        taskContainer.style.maxHeight = '60px';
-        taskContainer.style.overflowY = 'auto';
-
-        dayTasks.forEach(task => {
-          const taskElement = document.createElement('div');
-          taskElement.className = `calendar-task ${task.status}`;
-          taskElement.textContent = task.title;
-          taskContainer.appendChild(taskElement);
-        });
-
-        dayElement.appendChild(taskContainer);
-        calendarGrid.appendChild(dayElement);
+    function loadDarkModePreference() {
+      const darkModePreference = localStorage.getItem('todoAppDarkMode');
+      if (darkModePreference === 'true') {
+        document.body.classList.add('dark-mode');
+        document.body.classList.remove('light-mode');
+      } else {
+        document.body.classList.add('light-mode');
+        document.body.classList.remove('dark-mode');
       }
     }
 
     // Event Listeners
-    taskForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const title = taskInput.value.trim();
-      const value = taskValue.value;
-      const date = taskDate.value;
-      if (title && value && date) {
-        addTask(title, value, date);
-        taskInput.value = '';
-        taskValue.value = '';
-        taskDate.value = '';
+    document.getElementById('maxValueBtn').addEventListener('click', () => {
+      const newValue = prompt('Ingrese el valor máximo diario:', maxDailyValue);
+      if (newValue && !isNaN(newValue)) {
+        maxDailyValue = parseInt(newValue);
+        updateDailyProgress();
+        saveMaxDailyValue();
       }
     });
 
-    tasksList.addEventListener('click', (e) => {
-      if (e.target.classList.contains('delete-task')) {
-        const index = e.target.getAttribute('data-index');
-        deleteTask(index);
-      } else if (e.target.classList.contains('edit-task')) {
-        const index = e.target.getAttribute('data-index');
-        const dateString = formatDate(currentDate);
-        const task = tasks[dateString][index];
-        const newTitle = prompt('Editar tarea:', task.title);
-        const newValue = prompt('Nuevo valor:', task.value);
-        const newDate = prompt('Nueva fecha (YYYY-MM-DD):', task.date);
-        if (newTitle !== null && newValue !== null && newDate !== null) {
-          editTask(index, newTitle, newValue, newDate);
-        }
-      } else if (e.target.classList.contains('task-status')) {
-        const index = e.target.parentElement.querySelector('.edit-task').getAttribute('data-index');
-        toggleTaskStatus(index);
-      }
+    document.getElementById('addTaskBtn').addEventListener('click', addTask);
+
+    document.getElementById('showAllTasksBtn').addEventListener('click', showAllTasks);
+
+    document.querySelector('.close').addEventListener('click', () => {
+      document.getElementById('allTasksModal').style.display = 'none';
     });
 
-    notesTextarea.addEventListener('input', saveNotes);
+    document.getElementById('notesArea').addEventListener('blur', saveNotes);
 
-    themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('dark-theme');
-    
-    // Guardar el estado en localStorage
-    if (document.body.classList.contains('dark-theme')) {
-        localStorage.setItem('theme', 'dark');
-    } else {
-        localStorage.setItem('theme', 'light');
-    }
-    });
+    document.getElementById('toggleModeBtn').addEventListener('click', toggleDarkMode);
 
-    document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme');
-    
-    // Si el tema guardado es 'dark', aplica la clase 'dark-theme'
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
-    }
-    });
-
-    weeklyProgressTitle.addEventListener('click', () => {
-      taskModal.style.display = 'block';
-      renderModalTasks();
-    });
-
-    tasksBtn.addEventListener('click', () => {
-      taskModal.style.display = 'block';
-      renderModalTasks();
-    });
-
-    utilitiesBtn.addEventListener('click', () => {
-      alert('Funcionalidad de utilidades aún no implementada');
-    });
-
-    dataBtn.addEventListener('click', () => {
-      dataModal.style.display = 'block';
-    });
-
-    userGuideBtn.addEventListener('click', () => {
-      alert('Guía de usuario aún no implementada');
-    });
-
-    calendarBtn.addEventListener('click', () => {
-      calendarModal.style.display = 'block';
-      renderCalendar();
-    });
-
-    document.querySelectorAll('.close').forEach(closeBtn => {
-      closeBtn.addEventListener('click', () => {
-        closeBtn.closest('.modal').style.display = 'none';
-      });
-    });
-
-    window.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal')) {
-        e.target.style.display = 'none';
-      }
-    });
-
-    prevMonthBtn.addEventListener('click', () => {
-      currentDate.setMonth(currentDate.getMonth() - 1);
-      renderCalendar();
-    });
-
-    nextMonthBtn.addEventListener('click', () => {
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      renderCalendar();
-    });
-
-    document.getElementById('exportDataBtn').addEventListener('click', exportData);
-    document.getElementById('importDataBtn').addEventListener('click', importData);
-    document.getElementById('clearDataBtn').addEventListener('click', () => {
-      const num1 = Math.floor(Math.random() * 10) + 1;
-      const num2 = Math.floor(Math.random() * 10) + 1;
-      const num3 = Math.floor(Math.random() * 10) + 1;
-      const num4 = Math.floor(Math.random() * 10) + 1;
-      const sum = num1 + num2 + num3 + num4;
-      clearDataChallenge.textContent = `${num1} + ${num2} + ${num3} + ${num4} = ?`;
-      confirmClearModal.style.display = 'block';
-      clearDataAnswer.value = '';
-      confirmClearBtn.onclick = () => {
-        if (parseInt(clearDataAnswer.value) === sum) {
-          clearData();
-          confirmClearModal.style.display = 'none';
-        } else {
-          alert('Respuesta incorrecta. Inténtalo de nuevo.');
-        }
-      };
-    });
-
-    function renderModalTasks() {
-      modalTasksList.innerHTML = '';
-      Object.entries(tasks).forEach(([date, dayTasks]) => {
-        const dateElement = document.createElement('h3');
-        dateElement.textContent = new Date(date).toLocaleDateString();
-        modalTasksList.appendChild(dateElement);
-
-        dayTasks.forEach((task, index) => {
-          const taskElement = document.createElement('div');
-          taskElement.className = 'task-item';
-          taskElement.innerHTML = `
-            <span class="task-title">${task.title}</span>
-            <span class="task-value">${task.value}</span>
-            <span class="task-date">${new Date(task.date).toLocaleDateString()}</span>
-            <div class="task-actions">
-              <span class="task-status task-${task.status}">${task.status}</span>
-              <button class="action-btn edit-task" data-date="${date}" data-index="${index}">✏️</button>
-              <button class="action-btn delete-task" data-date="${date}" data-index="${index}">🗑️</button>
-            </div>
-          `;
-          modalTasksList.appendChild(taskElement);
-        });
-      });
-
-      // Add event listeners for edit and delete buttons
-      modalTasksList.querySelectorAll('.edit-task').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const date = e.target.getAttribute('data-date');
-          const index = e.target.getAttribute('data-index');
-          const task = tasks[date][index];
-          const newTitle = prompt('Editar tarea:', task.title);
-          const newValue = prompt('Nuevo valor:', task.value);
-          const newDate = prompt('Nueva fecha (YYYY-MM-DD):', task.date);
-          if (newTitle !== null && newValue !== null && newDate !== null) {
-            tasks[date][index] = { ...task, title: newTitle, value: parseInt(newValue), date: newDate };
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            renderModalTasks();
-            renderTasks();
-            renderWeeklyProgress();
-          }
-        });
-      });
-
-      modalTasksList.querySelectorAll('.delete-task').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const date = e.target.getAttribute('data-date');
-          const index = e.target.getAttribute('data-index');
-          if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
-            tasks[date].splice(index, 1);
-            if (tasks[date].length === 0) {
-              delete tasks[date];
-            }
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            renderModalTasks();
-            renderTasks();
-            renderWeeklyProgress();
-          }
-        });
-      });
-
-      modalTasksList.querySelectorAll('.task-status').forEach(statusElement => {
-        statusElement.addEventListener('click', (e) => {
-          const date = e.target.parentElement.querySelector('.edit-task').getAttribute('data-date');
-          const index = e.target.parentElement.querySelector('.edit-task').getAttribute('data-index');
-          const task = tasks[date][index];
-          const statusOrder = ['pending', 'in-progress', 'completed'];
-          const currentStatusIndex = statusOrder.indexOf(task.status);
-          task.status = statusOrder[(currentStatusIndex + 1) % 3];
-          localStorage.setItem('tasks', JSON.stringify(tasks));
-          renderModalTasks();
-          renderTasks();
-          renderWeeklyProgress();
-        });
-      });
-    }
-
-    function exportData() {
-      const data = {
-        tasks: tasks,
-        notes: notes
-      };
-      const dataStr = JSON.stringify(data);
-      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-      const exportFileDefaultName = 'todo_data.json';
-
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-    }
-
-    function importData() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = function (event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const contents = e.target.result;
-          try {
-            const data = JSON.parse(contents);
-            tasks = data.tasks || {};
-            notes = data.notes || {};
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            localStorage.setItem('notes', JSON.stringify(notes));
-            renderTasks();
-            renderWeeklyProgress();
-            loadNotes();
-            alert('Datos importados con éxito');
-          } catch (error) {
-            alert('Error al importar datos: ' + error.message);
-          }
-        };
-        reader.readAsText(file);
-      };
-      input.click();
-    }
-
-    function clearData() {
-      tasks = {};
-      notes = {};
-      localStorage.removeItem('tasks');
-      localStorage.removeItem('notes');
-      renderTasks();
-      renderWeeklyProgress();
-      loadNotes();
-      alert('Datos limpiados con éxito');
-    }
-
-    // Inicialización
-    renderWeeklyProgress();
-    renderTasks();
+    // Initialize
+    setInterval(updateTime, 1000);
+    updateTime();
+    initializeWeeklyProgress();
     loadNotes();
-    updateCurrentTime();
-    setInterval(updateCurrentTime, 1000);
-    renderCalendar();
+    loadTasks();
+    loadMaxDailyValue();
+    loadDarkModePreference();
 
-    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission();
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+      if (event.target == document.getElementById('allTasksModal')) {
+        document.getElementById('allTasksModal').style.display = "none";
+      }
     }
