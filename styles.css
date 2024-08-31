@@ -132,7 +132,6 @@
     flex-grow: 1;
   }
   .task-buttons button {
-    background: none;
     border: none;
     font-size: 16px;
     cursor: pointer;
