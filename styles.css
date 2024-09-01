@@ -1,206 +1,272 @@
- body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    transition: background-color 0.3s, color 0.3s;
-  }
-  body.light-mode {
-    background-color: #f0f0f0;
-    color: #333;
-  }
-  body.dark-mode {
-    background-color: #333;
-    color: #f0f0f0;
-  }
-  .top-bar {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .top-bar h1 {
-    margin: 0;
-    text-align: center;
-    flex-grow: 1;
-  }
-  .top-bar .time {
-    font-size: 0.8em;
-    text-align: center;
-  }
+body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s, color 0.3s;
+    }
 
-.dailyValue{
+    body.light-mode {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    body.dark-mode {
+      background-color: #333;
+      color: #f0f0f0;
+    }
+
+    .top-bar {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top-bar h1 {
+      margin: 0;
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .top-bar .time {
       font-size: 0.8em;
-}
+      text-align: center;
+    }
 
-  .main-content {
-    display: flex;
-    padding: 20px;
-  }
-  .left-section, .right-section {
-    flex: 1;
-    margin: 10px;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .light-mode .left-section, .light-mode .right-section {
-    background-color: white;
-  }
-  .dark-mode .left-section, .dark-mode .right-section {
-    background-color: #444;
-  }
-  .weekly-progress {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .day-bar {
-    width: 30px;
-    height: 100px;
-    border-radius: 5px;
-    position: relative;
-  }
-  .light-mode .day-bar {
-    background-color: #ddd;
-  }
-  .dark-mode .day-bar {
-    background-color: #555;
-  }
-  .day-bar.active {
-    background-color: #4CAF50;
-    border: 2px solid #2E8B57;
-  }
-  .day-bar::after {
-    content: attr(data-day);
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .day-bar.active::after {
-    color: #4CAF50;
-    font-weight: bold;
-  }
-  .add-task {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .add-task input {
-    flex: 1;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-  }
-  .add-task button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  .notes {
-    width: 100%;
-    height: 200px;
-    resize: vertical;
-  }
-  .tasks {
-    margin: 10px;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .light-mode .tasks {
-    background-color: white;
-  }
-  .dark-mode .tasks {
-    background-color: #444;
-  }
-  .task {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-  }
-  .task-info {
-    flex-grow: 1;
-  }
-  .task-buttons button {
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  .status-button {
-    padding: 5px 10px;
-    border-radius: 15px;
-    border: 1px solid #ccc;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    font-size: 14px;
-    min-width: 100px;
-  }
-  .status-pending {
-    background-color: #FFA500;
-  }
-  .status-in-progress {
-    background-color: #1E90FF;
-  }
-  .status-completed {
-    background-color: #32CD32;
-  }
-  .bottom-buttons {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 20px;
-  }
-  .bottom-buttons button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-  }
-  .modal-content {
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-  }
-  .light-mode .modal-content {
-    background-color: #fefefe;
-  }
-  .dark-mode .modal-content {
-    background-color: #333;
-  }
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-  }
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  }
+    .main-content {
+      display: flex;
+      padding: 20px;
+    }
+
+    .left-section,
+    .right-section {
+      flex: 1;
+      margin: 10px;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .light-mode .left-section,
+    .light-mode .right-section {
+      background-color: white;
+    }
+
+    .dark-mode .left-section,
+    .dark-mode .right-section {
+      background-color: #444;
+    }
+
+    .weekly-progress {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .day-bar {
+      width: 30px;
+      height: 100px;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    .light-mode .day-bar {
+      background-color: #ddd;
+    }
+
+    .dark-mode .day-bar {
+      background-color: #555;
+    }
+
+    .day-bar.active {
+      background-color: #4CAF50;
+      border: 2px solid #2E8B57;
+    }
+
+    .day-bar::after {
+      content: attr(data-day);
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .day-bar.active::after {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    .add-task {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .add-task input {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+
+    .add-task button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .notes {
+      width: 100%;
+      height: 200px;
+      resize: vertical;
+    }
+
+    .tasks {
+      margin: 10px;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .light-mode .tasks {
+      background-color: white;
+    }
+
+    .dark-mode .tasks {
+      background-color: #444;
+    }
+
+    .task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .task-info {
+      flex-grow: 1;
+    }
+
+    .task-buttons button {
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .status-button {
+      padding: 5px 10px;
+      border-radius: 15px;
+      border: 1px solid #ccc;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 14px;
+      min-width: 100px;
+    }
+
+    .status-pending {
+      background-color: #FFA500;
+    }
+
+    .status-in-progress {
+      background-color: #1E90FF;
+    }
+
+    .status-completed {
+      background-color: #32CD32;
+    }
+
+    .bottom-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+
+    .bottom-buttons button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+    }
+
+    .light-mode .modal-content {
+      background-color: #fefefe;
+    }
+
+    .dark-mode .modal-content {
+      background-color: #333;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .remaining-value {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 5px;
+      text-align: center;
+    }
+
+    .popout {
+      display: none;
+      position: fixed;
+      z-index: 2;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .dark-mode .popout {
+      background-color: #444;
+    }
+
+    .popout button {
+      margin: 5px;
+      padding: 10px;
+      width: 100%;
+    }
