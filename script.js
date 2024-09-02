@@ -1,4 +1,4 @@
-let maxDailyValue = 0;
+    let maxDailyValue = 6;
     let tasks = [];
     const daysOfWeek = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
 
@@ -11,7 +11,7 @@ let maxDailyValue = 0;
     function initializeWeeklyProgress() {
       const weeklyProgressElement = document.getElementById('weeklyProgress');
       const today = new Date().getDay();
-      
+
       for (let i = 0; i < 7; i++) {
         const dayBar = document.createElement('div');
         dayBar.className = 'day-bar';
@@ -25,17 +25,17 @@ let maxDailyValue = 0;
 
     function updateDailyProgress() {
       const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(task => 
+      const todayTasks = tasks.filter(task =>
         task.startDate <= today && task.endDate >= today
       );
-      
+
       let totalValue = 0;
       todayTasks.forEach(task => {
         if (task.status === 'completed') totalValue += parseInt(task.value);
         else if (task.status === 'in-progress') totalValue += parseInt(task.value) / 2;
       });
 
-      const progressPercentage = maxDailyValue > 0 ? (totalValue / maxDailyValue) * 100 : 0;
+      const progressPercentage = (totalValue / maxDailyValue) * 100;
       const activeBar = document.querySelector('.day-bar.active');
       if (activeBar) {
         activeBar.style.background = `linear-gradient(to top, #4CAF50 ${progressPercentage}%, ${document.body.classList.contains('dark-mode') ? '#555' : '#ddd'} ${progressPercentage}%)`;
@@ -46,12 +46,12 @@ let maxDailyValue = 0;
 
     function updateRemainingValue() {
       const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(task => 
+      const todayTasks = tasks.filter(task =>
         task.startDate <= today && task.endDate >= today
       );
 
       let usedValue = todayTasks.reduce((sum, task) => sum + parseInt(task.value), 0);
-      let remainingValue = Math.max(maxDailyValue - usedValue, 0);
+      let remainingValue = maxDailyValue - usedValue;
 
       document.getElementById('remainingValue').textContent = remainingValue;
     }
@@ -67,7 +67,7 @@ let maxDailyValue = 0;
         return;
       }
 
-      const tasksForSelectedDate = tasks.filter(task => 
+      const tasksForSelectedDate = tasks.filter(task =>
         task.startDate <= startDate && task.endDate >= startDate
       );
 
@@ -104,7 +104,7 @@ let maxDailyValue = 0;
       tasksContainer.innerHTML = '';
 
       const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(task => 
+      const todayTasks = tasks.filter(task =>
         task.startDate <= today && task.endDate >= today
       );
 
@@ -130,7 +130,7 @@ let maxDailyValue = 0;
     }
 
     function getStatusText(status) {
-      switch(status) {
+      switch (status) {
         case 'pending': return 'Pendiente';
         case 'in-progress': return 'En proceso';
         case 'completed': return 'Completado';
@@ -141,7 +141,7 @@ let maxDailyValue = 0;
     function changeStatus(taskId) {
       const task = tasks.find(t => t.id === taskId);
       if (task) {
-        switch(task.status) {
+        switch (task.status) {
           case 'pending':
             task.status = 'in-progress';
             break;
@@ -165,10 +165,10 @@ let maxDailyValue = 0;
         document.getElementById('taskValue').value = task.value;
         document.getElementById('taskStart').value = task.startDate;
         document.getElementById('taskEnd').value = task.endDate;
-        
+
         // Remove the old task
         deleteTask(taskId);
-        
+
         // The user can now edit the fields and add the task again
       }
     }
@@ -261,10 +261,9 @@ let maxDailyValue = 0;
 
     function loadMaxDailyValue() {
       const savedMaxDailyValue = localStorage.getItem('todoAppMaxDailyValue');
-      if (savedMaxDailyValue !== null) {
+      if (savedMaxDailyValue) {
         maxDailyValue = parseInt(savedMaxDailyValue);
       }
-      updateRemainingValue();
     }
 
     function toggleDarkMode() {
@@ -296,7 +295,7 @@ let maxDailyValue = 0;
         notes: document.getElementById('notesArea').value
       };
       const dataStr = JSON.stringify(data);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
       const exportFileDefaultName = 'todo_app_data.json';
 
       let linkElement = document.createElement('a');
@@ -346,7 +345,7 @@ let maxDailyValue = 0;
       if (userAnswer === sum1 + sum2) {
         localStorage.clear();
         tasks = [];
-        maxDailyValue = 0;
+        maxDailyValue = 6;
         document.getElementById('notesArea').value = '';
         renderTasks();
         updateDailyProgress();
@@ -360,7 +359,7 @@ let maxDailyValue = 0;
     // Event Listeners
     document.getElementById('maxValueBtn').addEventListener('click', () => {
       const newValue = prompt('Ingrese el valor máximo diario:', maxDailyValue);
-      if (newValue !== null && !isNaN(newValue)) {
+      if (newValue && !isNaN(newValue)) {
         maxDailyValue = parseInt(newValue);
         updateDailyProgress();
         saveMaxDailyValue();
@@ -407,7 +406,7 @@ let maxDailyValue = 0;
     loadDarkModePreference();
 
     // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       if (event.target == document.getElementById('allTasksModal')) {
         document.getElementById('allTasksModal').style.display = "none";
       }
