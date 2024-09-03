@@ -7,17 +7,17 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="light-mode">
+<body>
   <div class="top-bar">
     <div>
       <button id="maxValueBtn">💲</button>
-      <div id="remainingValue" class="remaining-value"></div>
+      <div id="remainingValue">0</div>
     </div>
     <div>
       <h1>Todo App</h1>
       <div class="time" id="current-time"></div>
     </div>
-    <button id="toggleModeBtn">🌓</button>
+    <button id="themeToggleBtn">🌓</button>
   </div>
 
   <div class="main-content">
@@ -38,10 +38,6 @@
     </div>
   </div>
 
-  <div class="tasks" id="tasksContainer">
-    <!-- Tasks will be dynamically generated here -->
-  </div>
-
   <div class="bottom-buttons">
     <button id="showAllTasksBtn">📝Tareas</button>
     <button>💡Utilidades</button>
@@ -49,28 +45,27 @@
     <button>❓Guía</button>
   </div>
 
+  <div class="tasks" id="tasksContainer">
+    <!-- Tasks will be dynamically generated here -->
+  </div>
+
   <div id="allTasksModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <h2>Todas las Tareas</h2>
-      <div id="allTasksList"></div>
+      <div id="allTasksList" class="all-tasks-list"></div>
     </div>
   </div>
 
-  <div id="dataPopout" class="popout">
-    <button id="exportDataBtn">Exportar Datos</button>
-    <button id="importDataBtn">Importar Datos</button>
-    <button id="clearDataBtn">Limpiar Datos</button>
-    <button id="closeDataPopoutBtn">Cerrar</button>
-  </div>
-
-  <div id="clearDataConfirmPopout" class="popout">
-    <h3>Confirmar limpieza de datos</h3>
-    <p>Para confirmar, resuelve la siguiente suma:</p>
-    <p id="clearDataSum"></p>
-    <input type="number" id="clearDataAnswer" placeholder="Tu respuesta">
-    <button id="confirmClearDataBtn">Confirmar</button>
-    <button id="cancelClearDataBtn">Cancelar</button>
+  <div id="dataModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Datos</h2>
+      <button id="exportDataBtn">Exportar Datos</button>
+      <button id="importDataBtn">Importar Datos</button>
+      <button id="clearDataBtn">Limpiar Datos</button>
+      <input type="file" id="importFile" style="display: none;">
+    </div>
   </div>
 
   <script src="script.js"></script>

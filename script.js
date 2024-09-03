@@ -1,6 +1,8 @@
-    let maxDailyValue = 6;
+let maxDailyValue = 0;
     let tasks = [];
+    let selectedDate = new Date().toISOString().split('T')[0];
     const daysOfWeek = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    let darkMode = false;
 
     function updateTime() {
       const now = new Date();
@@ -8,51 +10,80 @@
       document.getElementById('current-time').textContent = timeString;
     }
 
-    function initializeWeeklyProgress() {
-      const weeklyProgressElement = document.getElementById('weeklyProgress');
-      const today = new Date().getDay();
-
-      for (let i = 0; i < 7; i++) {
-        const dayBar = document.createElement('div');
-        dayBar.className = 'day-bar';
-        dayBar.setAttribute('data-day', daysOfWeek[i]);
-        if (i === today) {
-          dayBar.classList.add('active');
-        }
-        weeklyProgressElement.appendChild(dayBar);
-      }
+function initializeWeeklyProgress() {
+  const weeklyProgressElement = document.getElementById('weeklyProgress');
+  const today = new Date().getDay();
+  
+  for (let i = 0; i < 7; i++) {
+    const dayBar = document.createElement('div');
+    dayBar.className = 'day-bar';
+    dayBar.setAttribute('data-day', daysOfWeek[i]);
+    
+    if (i === today) {
+      dayBar.classList.add('active');
     }
+    
+    // Crear y agregar la etiqueta con la inicial del día
+    const dayLabel = document.createElement('div');
+    dayLabel.className = 'day-label';
+    dayLabel.textContent = daysOfWeek[i];
+    dayBar.appendChild(dayLabel);
+    
+    const dayBarFill = document.createElement('div');
+    dayBarFill.className = 'day-bar-fill';
+    dayBar.appendChild(dayBarFill);
+    
+    dayBar.addEventListener('click', () => selectDay(i));
+    weeklyProgressElement.appendChild(dayBar);
+  }
+  updateAllDailyProgress();
+}
 
-    function updateDailyProgress() {
-      const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(task =>
-        task.startDate <= today && task.endDate >= today
-      );
 
-      let totalValue = 0;
-      todayTasks.forEach(task => {
-        if (task.status === 'completed') totalValue += parseInt(task.value);
-        else if (task.status === 'in-progress') totalValue += parseInt(task.value) / 2;
+    function selectDay(dayIndex) {
+      const selectedDate = new Date();
+      selectedDate.setDate(selectedDate.getDate() - selectedDate.getDay() + dayIndex);
+      this.selectedDate = selectedDate.toISOString().split('T')[0];
+
+      document.querySelectorAll('.day-bar').forEach((bar, index) => {
+        bar.classList.toggle('active', index === dayIndex);
       });
 
-      const progressPercentage = (totalValue / maxDailyValue) * 100;
-      const activeBar = document.querySelector('.day-bar.active');
-      if (activeBar) {
-        activeBar.style.background = `linear-gradient(to top, #4CAF50 ${progressPercentage}%, ${document.body.classList.contains('dark-mode') ? '#555' : '#ddd'} ${progressPercentage}%)`;
-      }
-
+      renderTasks();
+      updateAllDailyProgress();
       updateRemainingValue();
     }
 
+    function updateAllDailyProgress() {
+      const weeklyProgressElement = document.getElementById('weeklyProgress');
+      const today = new Date();
+      
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - date.getDay() + i);
+        const dateString = date.toISOString().split('T')[0];
+        
+        const dayTasks = tasks.filter(task => 
+          task.startDate <= dateString && task.endDate >= dateString
+        );
+        
+        let totalValue = 0;
+        dayTasks.forEach(task => {
+          if (task.status === 'completed') totalValue += parseInt(task.value);
+          else if (task.status === 'in-progress') totalValue += parseInt(task.value) / 2;
+        });
+
+        const progressPercentage = (totalValue / maxDailyValue) * 100;
+        const dayBar = weeklyProgressElement.children[i];
+        const dayBarFill = dayBar.querySelector('.day-bar-fill');
+        dayBarFill.style.height = `${progressPercentage}%`;
+      }
+    }
+
     function updateRemainingValue() {
-      const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(task =>
-        task.startDate <= today && task.endDate >= today
-      );
-
+      const todayTasks = getAvailableTasks();
       let usedValue = todayTasks.reduce((sum, task) => sum + parseInt(task.value), 0);
-      let remainingValue = maxDailyValue - usedValue;
-
+      let remainingValue = Math.max(0, maxDailyValue - usedValue);
       document.getElementById('remainingValue').textContent = remainingValue;
     }
 
@@ -67,30 +98,31 @@
         return;
       }
 
-      const tasksForSelectedDate = tasks.filter(task =>
-        task.startDate <= startDate && task.endDate >= startDate
-      );
-
-      let currentDailyValue = tasksForSelectedDate.reduce((sum, task) => sum + parseInt(task.value), 0);
-
-      if (currentDailyValue + parseInt(value) > maxDailyValue) {
-        alert('No se puede agregar esta tarea. Excedería el valor máximo diario para la fecha seleccionada.');
-        return;
-      }
-
       const newTask = {
         id: Date.now(),
         name,
-        value,
+        value: parseInt(value),
         startDate,
         endDate,
         status: 'pending'
       };
 
+      const dayTasks = tasks.filter(task => 
+        task.startDate <= selectedDate && task.endDate >= selectedDate
+      );
+
+      const totalValue = dayTasks.reduce((sum, task) => sum + task.value, 0) + newTask.value;
+
+      if (totalValue > maxDailyValue) {
+        alert('No se puede agregar la tarea. Excede el valor máximo diario.');
+        return;
+      }
+
       tasks.push(newTask);
-      renderTasks();
-      updateDailyProgress();
       saveTasks();
+      renderTasks();
+      updateAllDailyProgress();
+      updateRemainingValue();
 
       // Clear input fields
       document.getElementById('taskName').value = '';
@@ -99,19 +131,20 @@
       document.getElementById('taskEnd').value = '';
     }
 
+    function getAvailableTasks() {
+      const today = new Date().toISOString().split('T')[0];
+      return tasks.filter(task => 
+        task.startDate <= selectedDate && task.endDate >= selectedDate && task.endDate >= today && task.status !== 'completed'
+      );
+    }
+
     function renderTasks() {
       const tasksContainer = document.getElementById('tasksContainer');
       tasksContainer.innerHTML = '';
 
-      const today = new Date().toISOString().split('T')[0];
-      const todayTasks = tasks.filter(task =>
-        task.startDate <= today && task.endDate >= today
-      );
+      const availableTasks = getAvailableTasks().sort((a, b) => b.value - a.value);
 
-      // Sort tasks by value (descending order)
-      todayTasks.sort((a, b) => parseInt(b.value) - parseInt(a.value));
-
-      todayTasks.forEach(task => {
+      availableTasks.forEach(task => {
         const taskElement = document.createElement('div');
         taskElement.className = 'task';
         taskElement.innerHTML = `
@@ -130,7 +163,7 @@
     }
 
     function getStatusText(status) {
-      switch (status) {
+      switch(status) {
         case 'pending': return 'Pendiente';
         case 'in-progress': return 'En proceso';
         case 'completed': return 'Completado';
@@ -141,7 +174,7 @@
     function changeStatus(taskId) {
       const task = tasks.find(t => t.id === taskId);
       if (task) {
-        switch (task.status) {
+        switch(task.status) {
           case 'pending':
             task.status = 'in-progress';
             break;
@@ -152,9 +185,10 @@
             task.status = 'pending';
             break;
         }
-        renderTasks();
-        updateDailyProgress();
         saveTasks();
+        renderTasks();
+        updateAllDailyProgress();
+        updateRemainingValue();
       }
     }
 
@@ -165,19 +199,20 @@
         document.getElementById('taskValue').value = task.value;
         document.getElementById('taskStart').value = task.startDate;
         document.getElementById('taskEnd').value = task.endDate;
-
+        
         // Remove the old task
         deleteTask(taskId);
-
+        
         // The user can now edit the fields and add the task again
       }
     }
 
     function deleteTask(taskId) {
       tasks = tasks.filter(t => t.id !== taskId);
-      renderTasks();
-      updateDailyProgress();
       saveTasks();
+      renderTasks();
+      updateAllDailyProgress();
+      updateRemainingValue();
     }
 
     function showAllTasks() {
@@ -202,32 +237,23 @@
 
         tasksByDate[date].forEach(task => {
           const taskElement = document.createElement('div');
+          taskElement.className = 'task';
           taskElement.innerHTML = `
-            <p>${task.name} - Valor: $${task.value}</p>
-            <button class="status-button status-${task.status}" onclick="changeStatusInModal(${task.id})">${getStatusText(task.status)}</button>
-            <button onclick="editTaskInModal(${task.id})">✏️</button>
-            <button onclick="deleteTaskInModal(${task.id})">🗑️</button>
+            <div class="task-info">
+              <h3>${task.name}</h3>
+              <p>Valor: $${task.value} | Inicio: ${task.startDate} | Fin: ${task.endDate}</p>
+            </div>
+            <div class="task-buttons">
+              <button class="status-button status-${task.status}" onclick="changeStatus(${task.id}); showAllTasks();">${getStatusText(task.status)}</button>
+              <button onclick="editTask(${task.id}); document.getElementById('allTasksModal').style.display='none';">✏️</button>
+              <button onclick="deleteTask(${task.id}); showAllTasks();">🗑️</button>
+            </div>
           `;
           allTasksList.appendChild(taskElement);
         });
       }
 
       modal.style.display = 'block';
-    }
-
-    function changeStatusInModal(taskId) {
-      changeStatus(taskId);
-      showAllTasks(); // Refresh the modal content
-    }
-
-    function editTaskInModal(taskId) {
-      editTask(taskId);
-      showAllTasks(); // Refresh the modal content
-    }
-
-    function deleteTaskInModal(taskId) {
-      deleteTask(taskId);
-      showAllTasks(); // Refresh the modal content
     }
 
     function saveNotes() {
@@ -251,7 +277,8 @@
       if (savedTasks) {
         tasks = JSON.parse(savedTasks);
         renderTasks();
-        updateDailyProgress();
+        updateAllDailyProgress();
+        updateRemainingValue();
       }
     }
 
@@ -260,32 +287,25 @@
     }
 
     function loadMaxDailyValue() {
-      const savedMaxDailyValue = localStorage.getItem('todoAppMaxDailyValue');
-      if (savedMaxDailyValue) {
-        maxDailyValue = parseInt(savedMaxDailyValue);
+      const savedValue = localStorage.getItem('todoAppMaxDailyValue');
+      if (savedValue) {
+        maxDailyValue = parseInt(savedValue);
+        updateAllDailyProgress();
+        updateRemainingValue();
       }
     }
 
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      document.body.classList.toggle('light-mode');
-      localStorage.setItem('todoAppDarkMode', document.body.classList.contains('dark-mode'));
-      updateDailyProgress();
+    function saveDarkModePreference() {
+      localStorage.setItem('todoAppDarkMode', darkMode);
     }
 
     function loadDarkModePreference() {
-      const darkModePreference = localStorage.getItem('todoAppDarkMode');
-      if (darkModePreference === 'true') {
-        document.body.classList.add('dark-mode');
-        document.body.classList.remove('light-mode');
-      } else {
-        document.body.classList.add('light-mode');
-        document.body.classList.remove('dark-mode');
+      const savedPreference = localStorage.getItem('todoAppDarkMode');
+      if (savedPreference !== null) {
+        darkMode = savedPreference === 'true';
+        document.body.classList.toggle('dark-mode', darkMode);
+        document.getElementById('themeToggleBtn').textContent = darkMode ? '🌞' : '🌓';
       }
-    }
-
-    function showDataPopout() {
-      document.getElementById('dataPopout').style.display = 'block';
     }
 
     function exportData() {
@@ -295,65 +315,73 @@
         notes: document.getElementById('notesArea').value
       };
       const dataStr = JSON.stringify(data);
-      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
       const exportFileDefaultName = 'todo_app_data.json';
 
-      let linkElement = document.createElement('a');
+      const linkElement = document.createElement('a');
       linkElement.setAttribute('href', dataUri);
       linkElement.setAttribute('download', exportFileDefaultName);
       linkElement.click();
     }
 
     function importData() {
-      let input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = e => {
-        let file = e.target.files[0];
-        let reader = new FileReader();
-        reader.readAsText(file, 'UTF-8');
-        reader.onload = readerEvent => {
-          let content = readerEvent.target.result;
-          let data = JSON.parse(content);
-          tasks = data.tasks;
-          maxDailyValue = data.maxDailyValue;
-          document.getElementById('notesArea').value = data.notes;
-          saveTasks();
-          saveMaxDailyValue();
-          saveNotes();
-          renderTasks();
-          updateDailyProgress();
-          alert('Datos importados con éxito');
-        }
-      }
-      input.click();
-    }
+      const fileInput = document.getElementById('importFile');
+      fileInput.click();
 
-    function showClearDataConfirmation() {
-      const sum1 = Math.floor(Math.random() * 100);
-      const sum2 = Math.floor(Math.random() * 100);
-      document.getElementById('clearDataSum').textContent = `${sum1} + ${sum2} = ?`;
-      document.getElementById('clearDataAnswer').value = '';
-      document.getElementById('clearDataConfirmPopout').style.display = 'block';
+      fileInput.onchange = function() {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            tasks = data.tasks;
+            maxDailyValue = data.maxDailyValue;
+            document.getElementById('notesArea').value = data.notes;
+            saveTasks();
+            saveMaxDailyValue();
+            saveNotes();
+            renderTasks();
+            updateAllDailyProgress();
+            updateRemainingValue();
+            alert('Datos importados correctamente');
+          } catch (error) {
+            alert('Error al importar los datos');
+          }
+        };
+
+        reader.readAsText(file);
+      };
     }
 
     function clearData() {
-      const sum1 = parseInt(document.getElementById('clearDataSum').textContent.split('+')[0]);
-      const sum2 = parseInt(document.getElementById('clearDataSum').textContent.split('+')[1]);
-      const userAnswer = parseInt(document.getElementById('clearDataAnswer').value);
+      const num1 = Math.floor(Math.random() * 100);
+      const num2 = Math.floor(Math.random() * 100);
+      const sum = num1 + num2;
 
-      if (userAnswer === sum1 + sum2) {
-        localStorage.clear();
+      const userSum = prompt(`Para confirmar la limpieza de datos, resuelva: ${num1} + ${num2} = ?`);
+
+      if (parseInt(userSum) === sum) {
         tasks = [];
         maxDailyValue = 6;
         document.getElementById('notesArea').value = '';
+        localStorage.removeItem('todoAppTasks');
+        localStorage.removeItem('todoAppMaxDailyValue');
+        localStorage.removeItem('todoAppNotes');
         renderTasks();
-        updateDailyProgress();
-        document.getElementById('clearDataConfirmPopout').style.display = 'none';
-        alert('Todos los datos han sido borrados');
+        updateAllDailyProgress();
+        updateRemainingValue();
+        alert('Datos limpiados correctamente');
       } else {
-        alert('Respuesta incorrecta. Los datos no se han borrado.');
+        alert('Suma incorrecta. Operación cancelada.');
       }
+    }
+
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+      document.getElementById('themeToggleBtn').textContent = darkMode ? '🌞' : '🌓';
+      saveDarkModePreference();
     }
 
     // Event Listeners
@@ -361,8 +389,9 @@
       const newValue = prompt('Ingrese el valor máximo diario:', maxDailyValue);
       if (newValue && !isNaN(newValue)) {
         maxDailyValue = parseInt(newValue);
-        updateDailyProgress();
         saveMaxDailyValue();
+        updateAllDailyProgress();
+        updateRemainingValue();
       }
     });
 
@@ -370,31 +399,23 @@
 
     document.getElementById('showAllTasksBtn').addEventListener('click', showAllTasks);
 
-    document.querySelector('.close').addEventListener('click', () => {
-      document.getElementById('allTasksModal').style.display = 'none';
+    document.getElementById('dataBtn').addEventListener('click', () => {
+      document.getElementById('dataModal').style.display = 'block';
     });
-
-    document.getElementById('notesArea').addEventListener('blur', saveNotes);
-
-    document.getElementById('toggleModeBtn').addEventListener('click', toggleDarkMode);
-
-    document.getElementById('dataBtn').addEventListener('click', showDataPopout);
 
     document.getElementById('exportDataBtn').addEventListener('click', exportData);
-
     document.getElementById('importDataBtn').addEventListener('click', importData);
+    document.getElementById('clearDataBtn').addEventListener('click', clearData);
 
-    document.getElementById('clearDataBtn').addEventListener('click', showClearDataConfirmation);
-
-    document.getElementById('closeDataPopoutBtn').addEventListener('click', () => {
-      document.getElementById('dataPopout').style.display = 'none';
+    document.querySelectorAll('.close').forEach(closeBtn => {
+      closeBtn.addEventListener('click', () => {
+        closeBtn.closest('.modal').style.display = 'none';
+      });
     });
 
-    document.getElementById('confirmClearDataBtn').addEventListener('click', clearData);
+    document.getElementById('notesArea').addEventListener('input', saveNotes);
 
-    document.getElementById('cancelClearDataBtn').addEventListener('click', () => {
-      document.getElementById('clearDataConfirmPopout').style.display = 'none';
-    });
+    document.getElementById('themeToggleBtn').addEventListener('click', toggleDarkMode);
 
     // Initialize
     setInterval(updateTime, 1000);
@@ -404,16 +425,12 @@
     loadTasks();
     loadMaxDailyValue();
     loadDarkModePreference();
+    updateRemainingValue();
+    renderTasks();
 
     // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function (event) {
-      if (event.target == document.getElementById('allTasksModal')) {
-        document.getElementById('allTasksModal').style.display = "none";
-      }
-      if (event.target == document.getElementById('dataPopout')) {
-        document.getElementById('dataPopout').style.display = "none";
-      }
-      if (event.target == document.getElementById('clearDataConfirmPopout')) {
-        document.getElementById('clearDataConfirmPopout').style.display = "none";
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
       }
     }
