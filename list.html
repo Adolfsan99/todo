@@ -125,6 +125,9 @@
   .task-dates {
     font-size: 0.9em;
     color: #666;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
   }
 
   .subtask-list {
@@ -235,6 +238,27 @@
       flex-grow: 1;
       margin-bottom: 5px;
     }
+    
+    .task-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .task-dates {
+      margin-top: 5px;
+    }
+  }
+
+  .subtask-list.hidden {
+    display: none;
+  }
+
+  .toggle-subtasks {
+    background-color: var(--secondary-color);
+  }
+
+  .toggle-subtasks:hover {
+    background-color: #27ae60;
   }
 </style>
 </head>
@@ -484,15 +508,11 @@ function groupTasksByDate(tasks) {
   const grouped = {};
   tasks.forEach(task => {
     const startDate = new Date(task.startDate);
-    const endDate = new Date(task.endDate);
-    
-    for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-      const dateStr = formatDate(date);
-      if (!grouped[dateStr]) {
-        grouped[dateStr] = [];
-      }
-      grouped[dateStr].push(task);
+    const dateStr = formatDate(startDate);
+    if (!grouped[dateStr]) {
+      grouped[dateStr] = [];
     }
+    grouped[dateStr].push(task);
   });
   
   for (const dateStr in grouped) {
@@ -514,17 +534,19 @@ function createTaskElement(task) {
     <div class="task-header">
       <span class="task-name">${task.name}</span>
       <span class="task-dates">
-        ${task.startDate} - ${task.endDate} | ${task.time}
+        ${task.startDate}${task.startDate !== task.endDate ? ' - ' + task.endDate : ''} | ${task.time}
       </span>
     </div>
     <div class="task-buttons">
       <button onclick="editTask(${task.id})">Editar</button>
       <button onclick="deleteTask(${task.id})">Eliminar</button>
+      <button class="toggle-subtasks" onclick="toggleSubtasks(${task.id})">Mostrar Subtareas</button>
     </div>
   `;
   
   const subtaskList = document.createElement('ul');
-  subtaskList.className = 'subtask-list';
+  subtaskList.className = 'subtask-list hidden';
+  subtaskList.id = `subtaskList_${task.id}`;
   
   task.subtasks.forEach(subtask => {
     const subtaskItem = document.createElement('li');
@@ -551,6 +573,13 @@ function createTaskElement(task) {
   taskItem.appendChild(subtaskList);
   taskItem.appendChild(subtaskControls);
   return taskItem;
+}
+
+function toggleSubtasks(taskId) {
+  const subtaskList = document.getElementById(`subtaskList_${taskId}`);
+  subtaskList.classList.toggle('hidden');
+  const toggleButton = subtaskList.parentNode.querySelector('.toggle-subtasks');
+  toggleButton.textContent = subtaskList.classList.contains('hidden') ? 'Mostrar Subtareas' : 'Ocultar Subtareas';
 }
 
 function showCompletedTasks() {
