@@ -1,0 +1,670 @@
+<html><head><base href="https://websim.io/todo-app/"><title>Organizador de Tareas Avanzado</title>
+<style>
+  :root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --background-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --completed-color: #4a4a4a;
+    --shadow-color: rgba(255, 255, 255, 0.1);
+    --border-color: #333333;
+    --button-height: 36px;
+    --input-height: 36px;
+    --border-radius: 8px;
+  }
+
+  body {
+    font-family: 'Roboto', Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+
+  h1 {
+    font-size: 2.5em;
+    margin-bottom: 30px;
+  }
+
+  #taskControls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #2a2a2a;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px var(--shadow-color);
+  }
+
+  #taskInput {
+    flex-grow: 1;
+    margin-right: 10px;
+    height: var(--input-height);
+    padding: 0 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    background-color: #333333;
+    color: var(--text-color);
+  }
+
+  .task-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  button, input[type="date"], input[type="time"] {
+    height: var(--button-height);
+    padding: 0 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+  }
+
+  button {
+    background-color: var(--primary-color);
+    color: white;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+  }
+
+  input[type="date"], input[type="time"] {
+    background-color: #333333;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+
+  .date-group {
+    background-color: #2a2a2a;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px var(--shadow-color);
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+
+  .date-header {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+  }
+
+  .task-item, .subtask-item, .completed-task-item {
+    background-color: #2a2a2a;
+    border: 1px solid var(--border-color);
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px var(--shadow-color);
+    transition: all 0.3s ease;
+  }
+
+  .task-item:hover, .completed-task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+  }
+
+  .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .task-name {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+
+  .task-dates {
+    font-size: 0.9em;
+    color: #999;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .subtask-list {
+    margin-left: 20px;
+    margin-top: 10px;
+  }
+
+  .subtask-item {
+    padding: 10px;
+    margin-bottom: 5px;
+  }
+
+  .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .checkbox-wrapper input[type="checkbox"] {
+    margin-right: 10px;
+  }
+
+  #completedTasksButton {
+    display: block;
+    margin: 20px auto;
+    font-size: 1em;
+    padding: 10px 20px;
+  }
+
+  .modal-content {
+    background-color: #2a2a2a;
+    margin: 10% auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 6px rgba(255,255,255,0.1);
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .alarm {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #333333;
+    color: var(--text-color);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(255,255,255,0.2);
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+  }
+
+  .alarm.show {
+    display: block;
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  }
+
+  @keyframes shake {
+    10%, 90% {
+      transform: translate(-50%, -50%) translate3d(-1px, 0, 0);
+    }
+    20%, 80% {
+      transform: translate(-50%, -50%) translate3d(2px, 0, 0);
+    }
+    30%, 50%, 70% {
+      transform: translate(-50%, -50%) translate3d(-4px, 0, 0);
+    }
+    40%, 60% {
+      transform: translate(-50%, -50%) translate3d(4px, 0, 0);
+    }
+  }
+
+  @media (max-width: 600px) {
+    body {
+      padding: 10px;
+    }
+
+    #taskControls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    #taskInput {
+      margin-right: 0;
+      margin-bottom: 10px;
+    }
+    
+    .task-buttons {
+      flex-wrap: wrap;
+    }
+    
+    .task-buttons button,
+    .task-buttons input[type="date"],
+    .task-buttons input[type="time"] {
+      flex-grow: 1;
+      margin-bottom: 5px;
+    }
+    
+    .task-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .task-dates {
+      margin-top: 5px;
+    }
+
+    .task-item, .subtask-item, .completed-task-item {
+      padding: 10px;
+    }
+
+    .subtask-controls {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .subtask-controls input[type="text"] {
+      margin-bottom: 5px;
+    }
+  }
+
+  .subtask-list.hidden {
+    display: none;
+  }
+
+  .toggle-subtasks {
+    background-color: var(--secondary-color);
+  }
+
+  .toggle-subtasks:hover {
+    background-color: #27ae60;
+  }
+</style>
+</head>
+<body>
+  <h1>Organizador de Tareas Avanzado</h1>
+  
+  <div id="taskControls">
+    <input type="text" id="taskInput" placeholder="Nueva tarea">
+    <div class="task-buttons">
+      <input type="date" id="startDate" placeholder="Fecha de inicio" style="display: none;">
+      <input type="date" id="endDate" placeholder="Fecha de finalización" style="display: none;">
+      <input type="time" id="taskTime" placeholder="Hora" style="display: none;">
+      <button onclick="setToday()">Hoy</button>
+      <button onclick="toggleDateTimeInputs()">Establecer fecha y hora</button>
+      <button onclick="addTask()">Agregar Tarea</button>
+    </div>
+  </div>
+  
+  <div id="taskContainer"></div>
+  
+  <button id="completedTasksButton" onclick="showCompletedTasks()">Mostrar Tareas Completadas</button>
+  
+  <div id="completedTasksModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Tareas Completadas</h2>
+      <ul id="completedTasksList"></ul>
+    </div>
+  </div>
+
+  <div id="alarm" class="alarm">
+    <p id="alarmMessage"></p>
+    <button onclick="dismissAlarm()">Aceptar</button>
+  </div>
+
+<script>
+let tasks = [];
+let completedTasks = [];
+
+function saveToLocalStorage() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+}
+
+function loadFromLocalStorage() {
+  const savedTasks = localStorage.getItem('tasks');
+  const savedCompletedTasks = localStorage.getItem('completedTasks');
+  
+  if (savedTasks) {
+    tasks = JSON.parse(savedTasks);
+  }
+  
+  if (savedCompletedTasks) {
+    completedTasks = JSON.parse(savedCompletedTasks);
+  }
+}
+
+function addTask() {
+  const taskInput = document.getElementById('taskInput');
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  const taskTimeInput = document.getElementById('taskTime');
+  const taskName = taskInput.value.trim();
+  let startDate = startDateInput.value;
+  let endDate = endDateInput.value;
+  let taskTime = taskTimeInput.value;
+  
+  if (taskName) {
+    if (!startDate || !endDate) {
+      const today = new Date().toISOString().split('T')[0];
+      startDate = today;
+      endDate = today;
+    }
+    if (!taskTime) {
+      taskTime = new Date().toTimeString().slice(0, 5);
+    }
+    
+    const newTask = {
+      id: Date.now(),
+      name: taskName,
+      startDate: startDate,
+      endDate: endDate,
+      time: taskTime,
+      subtasks: [],
+      completed: false
+    };
+    
+    tasks.push(newTask);
+    taskInput.value = '';
+    startDateInput.value = '';
+    endDateInput.value = '';
+    taskTimeInput.value = '';
+    renderTasks();
+    showAlarm("Tarea agregada con éxito.");
+  } else {
+    showAlarm("Por favor, ingrese un nombre para la tarea.");
+  }
+}
+
+function setToday() {
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  const timeStr = today.toTimeString().slice(0, 5);
+  document.getElementById('startDate').value = dateStr;
+  document.getElementById('endDate').value = dateStr;
+  document.getElementById('taskTime').value = timeStr;
+  showAlarm("Fecha y hora establecidas para ahora");
+}
+
+function toggleDateTimeInputs() {
+  const startDate = document.getElementById('startDate');
+  const endDate = document.getElementById('endDate');
+  const taskTime = document.getElementById('taskTime');
+  if (startDate.style.display === 'none') {
+    startDate.style.display = 'inline-block';
+    endDate.style.display = 'inline-block';
+    taskTime.style.display = 'inline-block';
+  } else {
+    startDate.style.display = 'none';
+    endDate.style.display = 'none';
+    taskTime.style.display = 'none';
+  }
+}
+
+function addSubtask(taskId) {
+  const subtaskInput = document.getElementById(`subtaskInput_${taskId}`);
+  const subtaskName = subtaskInput.value.trim();
+  
+  if (subtaskName) {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      task.subtasks.push({
+        id: Date.now(),
+        name: subtaskName,
+        completed: false
+      });
+      subtaskInput.value = '';
+      renderTasks();
+      saveToLocalStorage();
+    }
+  }
+}
+
+function toggleSubtaskCompletion(taskId, subtaskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (task) {
+    const subtask = task.subtasks.find(st => st.id === subtaskId);
+    if (subtask) {
+      subtask.completed = !subtask.completed;
+      updateTaskCompletion(task);
+      renderTasks();
+      saveToLocalStorage();
+    }
+  }
+}
+
+function updateTaskCompletion(task) {
+  if (task.subtasks.length > 0 && task.subtasks.every(st => st.completed)) {
+    task.completed = true;
+    completedTasks.push(task);
+    tasks = tasks.filter(t => t.id !== task.id);
+    showAlarm(`¡Tarea "${task.name}" completada! Puede encontrarla en "Mostrar Tareas Completadas".`);
+    saveToLocalStorage();
+  } else {
+    task.completed = false;
+  }
+}
+
+function deleteTask(taskId) {
+  tasks = tasks.filter(t => t.id !== taskId);
+  renderTasks();
+  saveToLocalStorage();
+}
+
+function deleteSubtask(taskId, subtaskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (task) {
+    task.subtasks = task.subtasks.filter(st => st.id !== subtaskId);
+    updateTaskCompletion(task);
+    renderTasks();
+    saveToLocalStorage();
+  }
+}
+
+function editTask(taskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (task) {
+    const newName = prompt("Editar tarea", task.name);
+    const newStartDate = prompt("Nueva fecha de inicio (YYYY-MM-DD)", task.startDate);
+    const newEndDate = prompt("Nueva fecha de finalización (YYYY-MM-DD)", task.endDate);
+    const newTime = prompt("Nueva hora (HH:MM)", task.time);
+    if (newName !== null && newStartDate !== null && newEndDate !== null && newTime !== null) {
+      task.name = newName.trim();
+      task.startDate = newStartDate;
+      task.endDate = newEndDate;
+      task.time = newTime;
+      renderTasks();
+      saveToLocalStorage();
+    }
+  }
+}
+
+function editSubtask(taskId, subtaskId) {
+  const task = tasks.find(t => t.id === taskId);
+  if (task) {
+    const subtask = task.subtasks.find(st => st.id === subtaskId);
+    if (subtask) {
+      const newName = prompt("Editar subtarea", subtask.name);
+      if (newName !== null) {
+        subtask.name = newName.trim();
+        renderTasks();
+        saveToLocalStorage();
+      }
+    }
+  }
+}
+
+function renderTasks() {
+  const taskContainer = document.getElementById('taskContainer');
+  taskContainer.innerHTML = '';
+  
+  const groupedTasks = groupTasksByDate(tasks);
+  
+  for (const [dateStr, tasksForDate] of Object.entries(groupedTasks)) {
+    const dateGroup = document.createElement('div');
+    dateGroup.className = 'date-group';
+    
+    const dateHeader = document.createElement('h3');
+    dateHeader.className = 'date-header';
+    dateHeader.textContent = dateStr;
+    dateGroup.appendChild(dateHeader);
+    
+    const taskList = document.createElement('ul');
+    taskList.className = 'task-list';
+    
+    tasksForDate.forEach(task => {
+      const taskItem = createTaskElement(task);
+      taskList.appendChild(taskItem);
+    });
+    
+    dateGroup.appendChild(taskList);
+    taskContainer.appendChild(dateGroup);
+  }
+}
+
+function groupTasksByDate(tasks) {
+  const grouped = {};
+  tasks.forEach(task => {
+    const startDate = new Date(task.startDate);
+    const dateStr = formatDate(startDate);
+    if (!grouped[dateStr]) {
+      grouped[dateStr] = [];
+    }
+    grouped[dateStr].push(task);
+  });
+  
+  for (const dateStr in grouped) {
+    grouped[dateStr].sort((a, b) => a.time.localeCompare(b.time));
+  }
+  
+  return grouped;
+}
+
+function formatDate(date) {
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('es-ES', options);
+}
+
+function createTaskElement(task) {
+  const taskItem = document.createElement('li');
+  taskItem.className = 'task-item';
+  taskItem.innerHTML = `
+    <div class="task-header">
+      <span class="task-name">${task.name}</span>
+      <span class="task-dates">
+        ${task.startDate}${task.startDate !== task.endDate ? ' - ' + task.endDate : ''} | ${task.time}
+      </span>
+    </div>
+    <div class="task-buttons">
+      <button onclick="editTask(${task.id})">Editar</button>
+      <button onclick="deleteTask(${task.id})">Eliminar</button>
+      <button class="toggle-subtasks" onclick="toggleSubtasks(${task.id})">Mostrar Subtareas</button>
+    </div>
+  `;
+  
+  const subtaskList = document.createElement('ul');
+  subtaskList.className = 'subtask-list hidden';
+  subtaskList.id = `subtaskList_${task.id}`;
+  
+  task.subtasks.forEach(subtask => {
+    const subtaskItem = document.createElement('li');
+    subtaskItem.className = 'subtask-item';
+    subtaskItem.innerHTML = `
+      <label class="checkbox-wrapper">
+        <input type="checkbox" ${subtask.completed ? 'checked' : ''} onchange="toggleSubtaskCompletion(${task.id}, ${subtask.id})">
+        <span class="checkmark"></span>
+        ${subtask.name}
+      </label>
+      <button onclick="editSubtask(${task.id}, ${subtask.id})">Editar</button>
+      <button onclick="deleteSubtask(${task.id}, ${subtask.id})">Eliminar</button>
+    `;
+    subtaskList.appendChild(subtaskItem);
+  });
+  
+  const subtaskControls = document.createElement('div');
+  subtaskControls.className = 'subtask-controls';
+  subtaskControls.innerHTML = `
+    <input type="text" id="subtaskInput_${task.id}" placeholder="Nueva subtarea">
+    <button onclick="addSubtask(${task.id})">+</button>
+  `;
+  
+  taskItem.appendChild(subtaskList);
+  taskItem.appendChild(subtaskControls);
+  return taskItem;
+}
+
+function toggleSubtasks(taskId) {
+  const subtaskList = document.getElementById(`subtaskList_${taskId}`);
+  subtaskList.classList.toggle('hidden');
+  const toggleButton = subtaskList.parentNode.querySelector('.toggle-subtasks');
+  toggleButton.textContent = subtaskList.classList.contains('hidden') ? 'Mostrar Subtareas' : 'Ocultar Subtareas';
+}
+
+function showCompletedTasks() {
+  const completedTasksList = document.getElementById('completedTasksList');
+  completedTasksList.innerHTML = '';
+  
+  completedTasks.forEach(task => {
+    const taskItem = document.createElement('li');
+    taskItem.className = 'completed-task-item';
+    taskItem.innerHTML = `
+      <div class="task-header">
+        <span class="task-name">${task.name}</span>
+        <div class="task-dates">
+          <span>Inicio: ${task.startDate}</span>
+          <span>Fin: ${task.endDate}</span>
+          <span>Hora: ${task.time}</span>
+        </div>
+      </div>
+      <button class="restore" onclick="restoreTask(${task.id})">Restaurar</button>
+    `;
+    completedTasksList.appendChild(taskItem);
+  });
+  
+  document.getElementById('completedTasksModal').style.display = 'block';
+}
+
+function restoreTask(taskId) {
+  const taskIndex = completedTasks.findIndex(t => t.id === taskId);
+  if (taskIndex !== -1) {
+    const task = completedTasks[taskIndex];
+    task.completed = false;
+    task.subtasks.forEach(subtask => subtask.completed = false);
+    tasks.push(task);
+    completedTasks.splice(taskIndex, 1);
+    renderTasks();
+    showCompletedTasks();
+    saveToLocalStorage();
+  }
+}
+
+function closeModal() {
+  document.getElementById('completedTasksModal').style.display = 'none';
+}
+
+function showAlarm(message) {
+  const alarm = document.getElementById('alarm');
+  const alarmMessage = document.getElementById('alarmMessage');
+  alarmMessage.textContent = message;
+  alarm.classList.add('show');
+}
+
+function dismissAlarm() {
+  const alarm = document.getElementById('alarm');
+  alarm.classList.remove('show');
+}
+
+window.onclick = function(event) {
+  const modal = document.getElementById('completedTasksModal');
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+loadFromLocalStorage();
+renderTasks();
+</script>
+
+</body></html>
