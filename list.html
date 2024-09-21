@@ -53,7 +53,7 @@
     gap: 10px;
   }
 
-  button, input[type="date"] {
+  button, input[type="date"], input[type="time"] {
     height: var(--button-height);
     padding: 0 15px;
     border: none;
@@ -73,7 +73,7 @@
     transform: translateY(-1px);
   }
 
-  input[type="date"] {
+  input[type="date"], input[type="time"] {
     background-color: white;
     border: 1px solid var(--border-color);
   }
@@ -184,8 +184,8 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background-color: #f0f0f0; /* Change from #f44336 to a light gray */
-    color: var(--text-color); /* Use the main text color instead of white */
+    background-color: #f0f0f0;
+    color: var(--text-color);
     padding: 20px;
     border-radius: var(--border-radius);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -230,7 +230,8 @@
     }
     
     .task-buttons button,
-    .task-buttons input[type="date"] {
+    .task-buttons input[type="date"],
+    .task-buttons input[type="time"] {
       flex-grow: 1;
       margin-bottom: 5px;
     }
@@ -245,8 +246,9 @@
     <div class="task-buttons">
       <input type="date" id="startDate" placeholder="Fecha de inicio" style="display: none;">
       <input type="date" id="endDate" placeholder="Fecha de finalización" style="display: none;">
+      <input type="time" id="taskTime" placeholder="Hora" style="display: none;">
       <button onclick="setToday()">Hoy</button>
-      <button onclick="toggleDateInputs()">Establecer fecha</button>
+      <button onclick="toggleDateTimeInputs()">Establecer fecha y hora</button>
       <button onclick="addTask()">Agregar Tarea</button>
     </div>
   </div>
@@ -294,9 +296,11 @@ function addTask() {
   const taskInput = document.getElementById('taskInput');
   const startDateInput = document.getElementById('startDate');
   const endDateInput = document.getElementById('endDate');
+  const taskTimeInput = document.getElementById('taskTime');
   const taskName = taskInput.value.trim();
   let startDate = startDateInput.value;
   let endDate = endDateInput.value;
+  let taskTime = taskTimeInput.value;
   
   if (taskName) {
     if (!startDate || !endDate) {
@@ -304,12 +308,16 @@ function addTask() {
       startDate = today;
       endDate = today;
     }
+    if (!taskTime) {
+      taskTime = new Date().toTimeString().slice(0, 5);
+    }
     
     const newTask = {
       id: Date.now(),
       name: taskName,
       startDate: startDate,
       endDate: endDate,
+      time: taskTime,
       subtasks: [],
       completed: false
     };
@@ -318,6 +326,7 @@ function addTask() {
     taskInput.value = '';
     startDateInput.value = '';
     endDateInput.value = '';
+    taskTimeInput.value = '';
     renderTasks();
     showAlarm("Tarea agregada con éxito.");
   } else {
@@ -326,21 +335,27 @@ function addTask() {
 }
 
 function setToday() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('startDate').value = today;
-  document.getElementById('endDate').value = today;
-  showAlarm("Fecha establecida para hoy");
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  const timeStr = today.toTimeString().slice(0, 5);
+  document.getElementById('startDate').value = dateStr;
+  document.getElementById('endDate').value = dateStr;
+  document.getElementById('taskTime').value = timeStr;
+  showAlarm("Fecha y hora establecidas para ahora");
 }
 
-function toggleDateInputs() {
+function toggleDateTimeInputs() {
   const startDate = document.getElementById('startDate');
   const endDate = document.getElementById('endDate');
+  const taskTime = document.getElementById('taskTime');
   if (startDate.style.display === 'none') {
     startDate.style.display = 'inline-block';
     endDate.style.display = 'inline-block';
+    taskTime.style.display = 'inline-block';
   } else {
     startDate.style.display = 'none';
     endDate.style.display = 'none';
+    taskTime.style.display = 'none';
   }
 }
 
@@ -410,10 +425,12 @@ function editTask(taskId) {
     const newName = prompt("Editar tarea", task.name);
     const newStartDate = prompt("Nueva fecha de inicio (YYYY-MM-DD)", task.startDate);
     const newEndDate = prompt("Nueva fecha de finalización (YYYY-MM-DD)", task.endDate);
-    if (newName !== null && newStartDate !== null && newEndDate !== null) {
+    const newTime = prompt("Nueva hora (HH:MM)", task.time);
+    if (newName !== null && newStartDate !== null && newEndDate !== null && newTime !== null) {
       task.name = newName.trim();
       task.startDate = newStartDate;
       task.endDate = newEndDate;
+      task.time = newTime;
       renderTasks();
       saveToLocalStorage();
     }
@@ -477,6 +494,11 @@ function groupTasksByDate(tasks) {
       grouped[dateStr].push(task);
     }
   });
+  
+  for (const dateStr in grouped) {
+    grouped[dateStr].sort((a, b) => a.time.localeCompare(b.time));
+  }
+  
   return grouped;
 }
 
@@ -492,7 +514,7 @@ function createTaskElement(task) {
     <div class="task-header">
       <span class="task-name">${task.name}</span>
       <span class="task-dates">
-        ${task.startDate} - ${task.endDate}
+        ${task.startDate} - ${task.endDate} | ${task.time}
       </span>
     </div>
     <div class="task-buttons">
@@ -544,6 +566,7 @@ function showCompletedTasks() {
         <div class="task-dates">
           <span>Inicio: ${task.startDate}</span>
           <span>Fin: ${task.endDate}</span>
+          <span>Hora: ${task.time}</span>
         </div>
       </div>
       <button class="restore" onclick="restoreTask(${task.id})">Restaurar</button>
@@ -577,10 +600,6 @@ function showAlarm(message) {
   const alarmMessage = document.getElementById('alarmMessage');
   alarmMessage.textContent = message;
   alarm.classList.add('show');
-  
-  // Remove the following two lines:
-  // const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
-  // audio.play();
 }
 
 function dismissAlarm() {
