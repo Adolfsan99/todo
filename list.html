@@ -67,6 +67,10 @@
       padding: 20px;
       border: 1px solid #888;
       width: 80%;
+      max-height: 70vh;
+      /* Set a maximum height */
+      overflow-y: auto;
+      /* Enable vertical scrolling */
     }
 
     .hidden {
@@ -90,6 +94,16 @@
       font-size: 0.9em;
       color: var(--secondary-color);
       margin-left: 10px;
+    }
+
+    /* Add smooth scrolling behavior */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Ensure the body doesn't scroll when modal is open */
+    body.modal-open {
+      overflow: hidden;
     }
   </style>
 </head>
@@ -450,6 +464,7 @@
       });
 
       document.getElementById('completedTasksModal').style.display = 'block';
+      document.body.classList.add('modal-open'); // Add class to body when modal is open
     }
 
     function editCompletedTask(taskId) {
@@ -504,12 +519,13 @@
 
     function closeModal() {
       document.getElementById('completedTasksModal').style.display = 'none';
+      document.body.classList.remove('modal-open'); // Remove class from body when modal is closed
     }
 
     window.onclick = function (event) {
       const modal = document.getElementById('completedTasksModal');
       if (event.target == modal) {
-        modal.style.display = "none";
+        closeModal();
       }
     }
 
