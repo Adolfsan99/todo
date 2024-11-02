@@ -4,1655 +4,664 @@
   <base href="https://adolfsan99.github.io/miniprograma/todo.html">
   <title>List.html</title>
   <link rel="icon" type="image/x-icon" href="favicon.png">
-  <style>
-    :root {
-      --primary-color: #2ecc71;
-      --secondary-color: #27ae60;
-      --background-color: #1a1a1a;
-      --text-color: #e0e0e0;
-      --border-color: #333333;
-      --border-radius: 8px;
-    }
+<style>
+:root {
+  --primary: #4CAF50;
+  --secondary: #1e1e1e;
+  --text: #ffffff;
+  --completed: #2E7D32;
+  --surface: #2d2d2d;
+  --hover: #3d3d3d;
+  --shadow: rgba(0, 0, 0, 0.2);
+}
 
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: var(--background-color);
-      color: var(--text-color);
-    }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 20px; /* Reduced from 30px */
+  background: var(--secondary);
+  color: var(--text);
+}
 
-    input,
-    button {
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: var(--border-radius);
-    }
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
 
-    button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
+h1 {
+  color: var(--primary);
+  font-size: 2.2em;
+  margin-bottom: 4px; /* Reduced from 8px */
+  font-weight: 600;
+}
 
-    .task-item,
-    .completed-task-item {
-      background-color: #2a2a2a;
-      border: 1px solid var(--border-color);
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: var(--border-radius);
-    }
+h2 {
+  color: var(--text);
+  font-size: 1.4em;
+  margin-bottom: 20px; /* Reduced from 30px */
+  opacity: 0.9;
+  font-weight: 500;
+}
 
-    .subtask-list {
-      margin-left: 20px;
-    }
+.task-controls {
+  margin-bottom: 15px; /* Reduced from 25px */
+  display: flex;
+  gap: 12px;
+}
 
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.4);
-    }
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--secondary);
+  font-weight: 500;
+  background: var(--primary);
+  font-size: 0.95em;
+}
 
-    .modal-content {
-      background-color: #2a2a2a;
-      margin: 1rem auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
+.btn:hover {
+  background: var(--primary);
+  opacity: 0.9;
+}
 
-    .hidden {
-      display: none;
-    }
+.task-list {
+  list-style: none;
+  padding: 0;
+}
 
-    .subtask-container {
-      margin-top: 10px;
-    }
+.task-item {
+  background: var(--surface);
+  color: var(--text);
+  padding: 12px; /* Reduced from 18px */
+  margin-bottom: 10px; /* Reduced from 15px */
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 3px 10px var(--shadow);
+}
 
-    .subtask-container input {
-      width: calc(100% - 40px);
-      margin-right: 5px;
-    }
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-    .subtask-container button {
-      width: 35px;
-    }
+.task-title {
+  font-size: 1.1em;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  flex-grow: 1;
+  margin: 0;
+  cursor: text;
+}
 
-    .completion-percentage {
-      font-size: 0.9em;
-      color: var(--secondary-color);
-      margin-left: 10px;
-    }
+.task-date {
+  font-size: 0.9em;
+  color: #aaa;
+}
 
-    /* Add smooth scrolling behavior */
-    html {
-      scroll-behavior: smooth;
-    }
+.task-percentage {
+  color: var(--primary);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-left: 12px;
+}
 
-    /* Ensure the body doesn't scroll when modal is open */
-    body.modal-open {
-      overflow: hidden;
-    }
-  </style>
+.subtask-list {
+  margin-left: 28px;
+  padding-left: 18px;
+  border-left: 2px solid var(--primary);
+  display: none;
+  margin-top: 8px; /* Reduced from 12px */
+  margin-bottom: 8px; /* Reduced from 12px */
+}
+
+.subtask-list.expanded {
+  display: block;
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.toggle-btn, .delete-btn, .add-subtask-btn {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.delete-btn {
+  color: #ff5252;
+}
+
+.add-subtask-btn, .drag-handle {
+  color: var(--primary);
+}
+
+[draggable=true] {
+  cursor: move;
+}
+
+.drag-handle {
+  opacity: 0.8;
+  cursor: move;
+  margin-right: 6px;
+  padding: 0 5px;
+}
+
+.date-text {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.date-text:hover {
+  background: var(--hover);
+}
+
+.drop-zone {
+  height: 10px;
+  margin: 5px 0;
+  transition: height 0.2s;
+  border-radius: 4px;
+}
+
+.drop-zone.active {
+  height: 40px;
+  border: 2px dashed var(--primary);
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.task-item.drag-over {
+  border: 2px dashed var(--primary);
+}
+
+.date-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+</style>
 </head>
-
-<body class="vsc-initialized" tinamind-id="befflofjcniongenjmbkgkoljhgliihe">
-  <h1>Lists.html</h1>
-
-  <div id="taskControls" style="display: flex; flex-direction: row; flex-wrap: wrap;">
-    <input type="text" id="taskInput" placeholder="Nueva tarea">
-    <div class="task-buttons">
-      <input type="date" id="startDate" placeholder="Fecha de inicio" style="display: none;">
-      <input type="date" id="endDate" placeholder="Fecha de finalización" style="display: none;">
-      <input type="time" id="taskTime" placeholder="Hora" style="display: none;">
-      <button onclick="toggleDateTimeInputs()">Establecer fecha y hora</button>
-      <button onclick="addTask()">Agregar Tarea</button>
-    </div>
+<body>
+<div class="container">
+  <h1>Listas.html</h1>
+  <h2 id="viewTitle">Tareas pendientes</h2>
+  <div id="dropZoneTop" class="drop-zone"></div>
+  <div class="task-controls">
+    <button id="addTask" class="btn">+ Nueva Tarea</button>
+    <button id="toggleCompleted" class="btn">Ver Completadas</button>
+    <button id="exportData" class="btn">Exportar JSON</button>
+    <button id="importData" class="btn">Importar JSON</button>
+    <input type="file" id="importFile" style="display: none" accept=".json">
   </div>
-
-  <div id="taskContainer">
-    <div class="date-group">
-      <h3 class="date-header">domingo, 13 de octubre de 2024</h3>
-      <ul class="task-list">
-        <li class="task-item" data-task-id="1726893301236">
-          <div class="task-header">
-            <span class="task-name">Terminar formación FrontEnd de Alura</span>
-            <span class="task-dates">
-              2024-10-13 | 08:00
-            </span>
-            <span class="completion-percentage">33% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1726893301236)">Editar</button>
-            <button onclick="deleteTask(1726893301236)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1726893301236)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1726893301236" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1726893301236" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1726893301236)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1726893301236">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" onchange="toggleSubtaskCompletion(1726893301236, 1726893393217)">
-                <span class="checkmark"></span>
-                IA generativa en Front-End: trabajando con semántica y HTML
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893393217)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893393217)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" onchange="toggleSubtaskCompletion(1726893301236, 1726893403107)">
-                <span class="checkmark"></span>
-                CSS: Flexbox y layouts responsivos
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893403107)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893403107)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" onchange="toggleSubtaskCompletion(1726893301236, 1726893414370)">
-                <span class="checkmark"></span>
-                Practicando Front End: Challenge Portafolio
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893414370)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893414370)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1726893301236, 1726893421507)">
-                <span class="checkmark"></span>
-                JavaScript para web: crea páginas dinámicas
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893421507)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893421507)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1726893301236, 1726893428646)">
-                <span class="checkmark"></span>
-                JavaScript: manipulando elementos en el DOM
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893428646)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893428646)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1726893301236, 1726893439559)">
-                <span class="checkmark"></span>
-                ChatGPT y JavaScript: construyendo el juego Pong
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893439559)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893439559)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1726893301236, 1726893448322)">
-                <span class="checkmark"></span>
-                Javascript: consumiendo y manejando datos de una API
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893448322)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893448322)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1726893301236, 1726893455345)">
-                <span class="checkmark"></span>
-                JavaScript: creando solicitudes
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893455345)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893455345)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1726893301236, 1726893462705)">
-                <span class="checkmark"></span>
-                GitHub Copilot y ChatGPT: impulsa tu desarrollo con IA
-              </label>
-
-              <button onclick="editSubtask(1726893301236, 1726893462705)">Editar</button>
-              <button onclick="deleteSubtask(1726893301236, 1726893462705)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-        <li class="task-item" data-task-id="1727185850608">
-          <div class="task-header">
-            <span class="task-name">Tareas de productividad</span>
-            <span class="task-dates">
-              2024-10-13 | 08:50
-            </span>
-            <span class="completion-percentage">25% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1727185850608)">Editar</button>
-            <button onclick="deleteTask(1727185850608)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1727185850608)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1727185850608" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1727185850608" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1727185850608)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1727185850608">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" onchange="toggleSubtaskCompletion(1727185850608, 1727185875185)">
-                <span class="checkmark"></span>
-                Organizar los favoritos del navegador
-              </label>
-
-              <button onclick="editSubtask(1727185850608, 1727185875185)">Editar</button>
-              <button onclick="deleteSubtask(1727185850608, 1727185875185)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1727185850608, 1727185913597)">
-                <span class="checkmark"></span>
-                Organizar los archivos de la computadora
-              </label>
-
-              <button onclick="editSubtask(1727185850608, 1727185913597)">Editar</button>
-              <button onclick="deleteSubtask(1727185850608, 1727185913597)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1727185850608, 1727185920152)">
-                <span class="checkmark"></span>
-                Organizar los archivos del telefono
-              </label>
-
-              <button onclick="editSubtask(1727185850608, 1727185920152)">Editar</button>
-              <button onclick="deleteSubtask(1727185850608, 1727185920152)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1727185850608, 1727185936633)">
-                <span class="checkmark"></span>
-                Organizar los archivos del disco duro
-              </label>
-
-              <button onclick="editSubtask(1727185850608, 1727185936633)">Editar</button>
-              <button onclick="deleteSubtask(1727185850608, 1727185936633)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-        <li class="task-item" data-task-id="1728692620829">
-          <div class="task-header">
-            <span class="task-name">Trabajo</span>
-            <span class="task-dates">
-              2024-10-13 | 12:00
-            </span>
-            <span class="completion-percentage">0% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1728692620829)">Editar</button>
-            <button onclick="deleteTask(1728692620829)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1728692620829)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1728692620829" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1728692620829" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1728692620829)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1728692620829">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728692620829, 1728692626862)">
-                <span class="checkmark"></span>
-                Revisar el archivo de SEO de Horacio
-              </label>
-
-              <button onclick="editSubtask(1728692620829, 1728692626862)">Editar</button>
-              <button onclick="deleteSubtask(1728692620829, 1728692626862)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728692620829, 1728692632844)">
-                <span class="checkmark"></span>
-                Seguir creando o mejorando la pagina de tienda
-              </label>
-
-              <button onclick="editSubtask(1728692620829, 1728692632844)">Editar</button>
-              <button onclick="deleteSubtask(1728692620829, 1728692632844)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-        <li class="task-item" data-task-id="1728589656685">
-          <div class="task-header">
-            <span class="task-name">NoCountry Simulación</span>
-            <span class="task-dates">
-              2024-10-13 | 14:47
-            </span>
-            <span class="completion-percentage">0% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1728589656685)">Editar</button>
-            <button onclick="deleteTask(1728589656685)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1728589656685)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1728589656685" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1728589656685" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1728589656685)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1728589656685">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728589656685, 1728589676997)">
-                <span class="checkmark"></span>
-                FRONT TAREA: Pantalla Lista de Tareas
-              </label>
-
-              <button onclick="editSubtask(1728589656685, 1728589676997)">Editar</button>
-              <button onclick="deleteSubtask(1728589656685, 1728589676997)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="date-group">
-      <h3 class="date-header">sábado, 2 de noviembre de 2024</h3>
-      <ul class="task-list">
-        <li class="task-item" data-task-id="1728539903786">
-          <div class="task-header">
-            <span class="task-name">Viaje a Curumani</span>
-            <span class="task-dates">
-              2024-11-02 - 2024-11-16 | 13:00
-            </span>
-            <span class="completion-percentage">0% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1728539903786)">Editar</button>
-            <button onclick="deleteTask(1728539903786)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1728539903786)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1728539903786" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1728539903786" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1728539903786)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1728539903786">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728539922723)">
-                <span class="checkmark"></span>
-                Investigar cuanto cuesta el viaje ida y venida en bus
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728539922723)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728539922723)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728539943850)">
-                <span class="checkmark"></span>
-                Ahorrar lo suficiente para pagar el viaje de ida y venida
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728539943850)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728539943850)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728539953705)">
-                <span class="checkmark"></span>
-                Llevar un poco más de dinero por si acaso
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728539953705)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728539953705)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728539964296)">
-                <span class="checkmark"></span>
-                Comprar el viaje de ida y vuelta
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728539964296)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728539964296)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728539989451)">
-                <span class="checkmark"></span>
-                Tener la computadora con más ram o reparada para el viaje
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728539989451)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728539989451)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728540006016)">
-                <span class="checkmark"></span>
-                Empacar mi ropa y la computadora, asegurar que la pantalla no se rompa
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728540006016)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728540006016)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728539903786, 1728540010860)">
-                <span class="checkmark"></span>
-                Viajar
-              </label>
-
-              <button onclick="editSubtask(1728539903786, 1728540010860)">Editar</button>
-              <button onclick="deleteSubtask(1728539903786, 1728540010860)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="date-group">
-      <h3 class="date-header">martes, 15 de octubre de 2024</h3>
-      <ul class="task-list">
-        <li class="task-item" data-task-id="1728540054357">
-          <div class="task-header">
-            <span class="task-name">31 de octubre - ¡Participa en Green Direct 2!</span>
-            <span class="task-dates">
-              2024-10-15 - 2024-11-15 | 13:00
-            </span>
-            <span class="completion-percentage">0% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1728540054357)">Editar</button>
-            <button onclick="deleteTask(1728540054357)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1728540054357)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1728540054357" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1728540054357" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1728540054357)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1728540054357">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728540054357, 1728540065924)">
-                <span class="checkmark"></span>
-                Leer los requerimientos
-              </label>
-
-              <button onclick="editSubtask(1728540054357, 1728540065924)">Editar</button>
-              <button onclick="deleteSubtask(1728540054357, 1728540065924)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728540054357, 1728540070485)">
-                <span class="checkmark"></span>
-                Tener el juego listo
-              </label>
-
-              <button onclick="editSubtask(1728540054357, 1728540070485)">Editar</button>
-              <button onclick="deleteSubtask(1728540054357, 1728540070485)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728540054357, 1728540085993)">
-                <span class="checkmark"></span>
-                Crear una demostración la cual puede publicarse en el video
-              </label>
-
-              <button onclick="editSubtask(1728540054357, 1728540085993)">Editar</button>
-              <button onclick="deleteSubtask(1728540054357, 1728540085993)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728540054357, 1728540095483)">
-                <span class="checkmark"></span>
-                Hacer el video y mandar la informacion asociada
-              </label>
-
-              <button onclick="editSubtask(1728540054357, 1728540095483)">Editar</button>
-              <button onclick="deleteSubtask(1728540054357, 1728540095483)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728540054357, 1728540098351)">
-                <span class="checkmark"></span>
-                Participar
-              </label>
-
-              <button onclick="editSubtask(1728540054357, 1728540098351)">Editar</button>
-              <button onclick="deleteSubtask(1728540054357, 1728540098351)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="date-group">
-      <h3 class="date-header">sábado, 12 de octubre de 2024</h3>
-      <ul class="task-list">
-        <li class="task-item" data-task-id="1728683971893">
-          <div class="task-header">
-            <span class="task-name">Cita medica</span>
-            <span class="task-dates">
-              2024-10-12 | 06:00
-            </span>
-            <span class="completion-percentage">0% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1728683971893)">Editar</button>
-            <button onclick="deleteTask(1728683971893)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1728683971893)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1728683971893" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1728683971893" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1728683971893)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1728683971893">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728683971893, 1728683993359)">
-                <span class="checkmark"></span>
-                Baño en seco
-              </label>
-
-              <button onclick="editSubtask(1728683971893, 1728683993359)">Editar</button>
-              <button onclick="deleteSubtask(1728683971893, 1728683993359)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728683971893, 1728683997689)">
-                <span class="checkmark"></span>
-                Dormir temprano
-              </label>
-
-              <button onclick="editSubtask(1728683971893, 1728683997689)">Editar</button>
-              <button onclick="deleteSubtask(1728683971893, 1728683997689)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728683971893, 1728684008248)">
-                <span class="checkmark"></span>
-                Incluir más musica
-              </label>
-
-              <button onclick="editSubtask(1728683971893, 1728684008248)">Editar</button>
-              <button onclick="deleteSubtask(1728683971893, 1728684008248)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728683971893, 1728684012295)">
-                <span class="checkmark"></span>
-                Ir a la cita
-              </label>
-
-              <button onclick="editSubtask(1728683971893, 1728684012295)">Editar</button>
-              <button onclick="deleteSubtask(1728683971893, 1728684012295)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-        <li class="task-item" data-task-id="1728699740374">
-          <div class="task-header">
-            <span class="task-name">Ultimos detalles portafolio</span>
-            <span class="task-dates">
-              2024-10-12 | 21:22
-            </span>
-            <span class="completion-percentage">33% completado</span>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editTask(1728699740374)">Editar</button>
-            <button onclick="deleteTask(1728699740374)">Eliminar</button>
-            <button class="toggle-subtasks" onclick="toggleSubtasks(1728699740374)">Mostrar Subtareas</button>
-          </div>
-          <div id="subtaskContainer_1728699740374" class="subtask-container hidden">
-            <input type="text" id="subtaskInput_1728699740374" placeholder="Nueva subtarea">
-            <button onclick="addSubtask(1728699740374)">+</button>
-          </div>
-          <ul class="subtask-list hidden" id="subtaskList_1728699740374">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728699740374, 1728699748849)">
-                <span class="checkmark"></span>
-                Enlazar, completar y detallar Portafolio y proyectos
-              </label>
-
-              <button onclick="editSubtask(1728699740374, 1728699748849)">Editar</button>
-              <button onclick="deleteSubtask(1728699740374, 1728699748849)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" onchange="toggleSubtaskCompletion(1728699740374, 1728699753306)">
-                <span class="checkmark"></span>
-                Iconos de programas para hardskills y proyectos
-              </label>
-
-              <button onclick="editSubtask(1728699740374, 1728699753306)">Editar</button>
-              <button onclick="deleteSubtask(1728699740374, 1728699753306)">Eliminar</button>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" onchange="toggleSubtaskCompletion(1728699740374, 1728699757039)">
-                <span class="checkmark"></span>
-                Verificaciones para el formulario de contacto (falta)
-              </label>
-
-              <button onclick="editSubtask(1728699740374, 1728699757039)">Editar</button>
-              <button onclick="deleteSubtask(1728699740374, 1728699757039)">Eliminar</button>
-
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <button id="completedTasksButton" onclick="showCompletedTasks()">Mostrar Tareas Completadas</button>
-
-  <div id="completedTasksModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close" style="font-size: 2rem; cursor: pointer;" onclick="closeModal()">×</span>
-      <h2>Tareas Completadas</h2>
-      <ul id="completedTasksList">
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Cita medica para lentes de contacto</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-09-24</span>
-              <span>Fin: 2024-09-24</span>
-              <span>Hora: 07:00</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1726893008189)">Editar</button>
-            <button onclick="restoreTask(1726893008189)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1726893008189)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1726893008189">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726893008189, 1726893043577)">
-                <span class="checkmark"></span>
-                Levantarme a las 5am
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726893008189, 1726893067866)">
-                <span class="checkmark"></span>
-                Recargar la tarjeta de transmilenio
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726893008189, 1726893072607)">
-                <span class="checkmark"></span>
-                Ir a la cita medica
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Exposición de estado actual de Marketing de GlobalBCO con toda la información,
-              alternativas etc</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-09-24</span>
-              <span>Fin: 2024-09-24</span>
-              <span>Hora: 14:30</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1726892953617)">Editar</button>
-            <button onclick="restoreTask(1726892953617)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1726892953617)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1726892953617">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726892953617, 1726892972941)">
-                <span class="checkmark"></span>
-                Estructurar la información
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726892953617, 1726892975554)">
-                <span class="checkmark"></span>
-                Hacer las diapositivas
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726892953617, 1727053873342)">
-                <span class="checkmark"></span>
-                Presentar
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Tareas cotidianas</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-09-22</span>
-              <span>Fin: 2024-09-22</span>
-              <span>Hora: 01:23</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1726899792216)">Editar</button>
-            <button onclick="restoreTask(1726899792216)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1726899792216)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1726899792216">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726899792216, 1726899828183)">
-                <span class="checkmark"></span>
-                Bañarme
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726899792216, 1726899833698)">
-                <span class="checkmark"></span>
-                Ver horoscopo
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726899792216, 1726900428379)">
-                <span class="checkmark"></span>
-                Lavar el plato y la olla del arroz
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726899792216, 1726900433271)">
-                <span class="checkmark"></span>
-                Hacer arroz
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1726899792216, 1726900450201)">
-                <span class="checkmark"></span>
-                Ajustar el colchon
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Tareas cotidianas</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-09-24</span>
-              <span>Fin: 2024-09-24</span>
-              <span>Hora: 08:04</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1727183089154)">Editar</button>
-            <button onclick="restoreTask(1727183089154)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1727183089154)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1727183089154">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1727183089154, 1727185750095)">
-                <span class="checkmark"></span>
-                Comprar huevos
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1727183089154, 1727185757396)">
-                <span class="checkmark"></span>
-                Comer con pollo
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Reunion modificación de hojas PDFMkaer</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-10-02</span>
-              <span>Fin: 2024-10-02</span>
-              <span>Hora: 10:00</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1727459902041)">Editar</button>
-            <button onclick="restoreTask(1727459902041)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1727459902041)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1727459902041">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1727459902041, 1728297345911)">
-                <span class="checkmark"></span>
-                Tener la reunion
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Trabajo de hoy</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-10-07</span>
-              <span>Fin: 2024-10-07</span>
-              <span>Hora: 05:36</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1728297396300)">Editar</button>
-            <button onclick="restoreTask(1728297396300)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1728297396300)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1728297396300">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728297396300, 1728297412728)">
-                <span class="checkmark"></span>
-                Reunion con Roberto para avanzar en asuntos de GlobalBCO
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728297396300, 1728297443120)">
-                <span class="checkmark"></span>
-                Mandar mensaje a Oscar sobre la actualización del documento de PDFMaker que no se reflejan los cambios
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728297396300, 1728297456548)">
-                <span class="checkmark"></span>
-                Avisar a la gente de AquaPlants los nuevos cambios de la pagina web
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Trabajo de hoy</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-09-24</span>
-              <span>Fin: 2024-09-24</span>
-              <span>Hora: 08:05</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1727183137837)">Editar</button>
-            <button onclick="restoreTask(1727183137837)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1727183137837)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1727183137837">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1727183137837, 1727183156719)">
-                <span class="checkmark"></span>
-                Implementación del foro de AquaPlants de pagina a desarrollo a producción
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1727183137837, 1727183168628)">
-                <span class="checkmark"></span>
-                Incluir footer en la pagina de tienda
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1727183137837, 1727201468549)">
-                <span class="checkmark"></span>
-                Ajustes a link de Almacigos, ahora al presionar un almacigo redirije a la tienda con la categoria con
-                almacigos seleccionada
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Trabajo de hoy</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-10-10</span>
-              <span>Fin: 2024-10-10</span>
-              <span>Hora: 01:32</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1728541928844)">Editar</button>
-            <button onclick="restoreTask(1728541928844)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1728541928844)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1728541928844">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728541943827)">
-                <span class="checkmark"></span>
-                Ajustes logo de precargador AquaPlants
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728541962344)">
-                <span class="checkmark"></span>
-                Ajustes fotos de planes pagina de inicio se deforman AquaPlants
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728542013135)">
-                <span class="checkmark"></span>
-                Reunion con Horacio explicandole que RankMath no funciona y para decidir si usar AIOSEO o esperar
-                actualizacion de wordpress para usar RankMath
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728582743713)">
-                <span class="checkmark"></span>
-                Más ajustes de pagina web para AquaPlants
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728582756250)">
-                <span class="checkmark"></span>
-                Revisar documento SEO de Horacio
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728630517303)">
-                <span class="checkmark"></span>
-                Ajustar espacio de interlineado AquaPlants
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728681348134)">
-                <span class="checkmark"></span>
-                Actualizar seccion de estadisticas circulares AquaPlants
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728692115756)">
-                <span class="checkmark"></span>
-                Ajuste en como se ven las noticias
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728692120674)">
-                <span class="checkmark"></span>
-                Texto debe ser igual en todos los lugares
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728541928844, 1728692125169)">
-                <span class="checkmark"></span>
-                Cambio de estadisticas circulares
-              </label>
-
-            </li>
-          </ul>
-        </li>
-        <li class="completed-task-item">
-          <div class="task-header">
-            <span class="task-name">Portafolio</span>
-            <div class="task-dates">
-              <span>Inicio: 2024-10-10</span>
-              <span>Fin: 2024-10-10</span>
-              <span>Hora: 14:46</span>
-            </div>
-          </div>
-          <div class="task-buttons">
-            <button onclick="editCompletedTask(1728589585713)">Editar</button>
-            <button onclick="restoreTask(1728589585713)">Restaurar</button>
-            <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(1728589585713)">Mostrar Subtareas</button>
-          </div>
-          <ul class="subtask-list hidden" id="completedSubtaskList_1728589585713">
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589596662)">
-                <span class="checkmark"></span>
-                Seccion portafolio y proyectos
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589602545)">
-                <span class="checkmark"></span>
-                Seccion habilidades y servicios
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589607435)">
-                <span class="checkmark"></span>
-                Incluir desplazamiento suave en la navegación de telefonos
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589612108)">
-                <span class="checkmark"></span>
-                Ajuste padding boton de Ver CV
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589616611)">
-                <span class="checkmark"></span>
-                Ajuste hover en la foto
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589621238)">
-                <span class="checkmark"></span>
-                Cambiar color de la camiseta a verde
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589625560)">
-                <span class="checkmark"></span>
-                Efecto de letra cursiva en el rol
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589630775)">
-                <span class="checkmark"></span>
-                Efecto de opcion de navegación seleccionado (Ej: Destacar "Sobre mi")
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728589644634)">
-                <span class="checkmark"></span>
-                Proyectos personales (falta)
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728609130378)">
-                <span class="checkmark"></span>
-                Mejorar los textos de hardskills y softskills
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728676597289)">
-                <span class="checkmark"></span>
-                Texto de "seleccione una categoria" en portafolio
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728676600821)">
-                <span class="checkmark"></span>
-                Ajustar footer final de la pagina (abajo de contacto)
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728676609886)">
-                <span class="checkmark"></span>
-                Efecto de scroll para computadoras
-              </label>
-
-            </li>
-            <li class="subtask-item">
-              <label class="checkbox-wrapper">
-                <input type="checkbox" checked="" disabled=""
-                  onchange="toggleSubtaskCompletion(1728589585713, 1728676642691)">
-                <span class="checkmark"></span>
-                Mover el menu hamburguesa a la derecha
-              </label>
-
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <script>
-    let tasks = [];
-    let completedTasks = [];
-
-    function saveToLocalStorage() {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
-    }
-
-    function loadFromLocalStorage() {
-      const savedTasks = localStorage.getItem('tasks');
-      const savedCompletedTasks = localStorage.getItem('completedTasks');
-
-      if (savedTasks) {
-        tasks = JSON.parse(savedTasks);
-      }
-
-      if (savedCompletedTasks) {
-        completedTasks = JSON.parse(savedCompletedTasks);
-      }
-    }
-
-    function addTask() {
-      const taskInput = document.getElementById('taskInput');
-      const startDateInput = document.getElementById('startDate');
-      const endDateInput = document.getElementById('endDate');
-      const taskTimeInput = document.getElementById('taskTime');
-      const taskName = taskInput.value.trim();
-      let startDate = startDateInput.value;
-      let endDate = endDateInput.value;
-      let taskTime = taskTimeInput.value;
-
-      if (taskName) {
-        if (!startDate || !endDate) {
-          const today = new Date();
-          startDate = today.toLocaleDateString('en-CA');
-          endDate = today.toLocaleDateString('en-CA');
-        }
-        if (!taskTime) {
-          taskTime = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-        }
-
-        const newTask = {
-          id: Date.now(),
-          name: taskName,
-          startDate: startDate,
-          endDate: endDate,
-          time: taskTime,
-          subtasks: [],
-          completed: false
-        };
-
-        tasks.push(newTask);
-        taskInput.value = '';
-        startDateInput.value = '';
-        endDateInput.value = '';
-        taskTimeInput.value = '';
-        renderTasks();
-        alert("Tarea agregada con éxito.");
-        saveToLocalStorage();
-      } else {
-        alert("Por favor, ingrese un nombre para la tarea.");
-      }
-    }
-
-    function toggleDateTimeInputs() {
-      const startDate = document.getElementById('startDate');
-      const endDate = document.getElementById('endDate');
-      const taskTime = document.getElementById('taskTime');
-      if (startDate.style.display === 'none') {
-        startDate.style.display = 'inline-block';
-        endDate.style.display = 'inline-block';
-        taskTime.style.display = 'inline-block';
-      } else {
-        startDate.style.display = 'none';
-        endDate.style.display = 'none';
-        taskTime.style.display = 'none';
-      }
-    }
-
-    function addSubtask(taskId) {
-      const subtaskInput = document.getElementById(`subtaskInput_${taskId}`);
-      const subtaskName = subtaskInput.value.trim();
-
-      if (subtaskName) {
-        const task = tasks.find(t => t.id === taskId);
-        if (task) {
-          task.subtasks.push({
-            id: Date.now(),
-            name: subtaskName,
-            completed: false
-          });
-          subtaskInput.value = '';
-          renderTasks();
-          saveToLocalStorage();
-        }
-      }
-    }
-
-    function toggleSubtaskCompletion(taskId, subtaskId) {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        const subtask = task.subtasks.find(st => st.id === subtaskId);
-        if (subtask) {
-          subtask.completed = !subtask.completed;
-          updateTaskCompletion(task);
-          renderTasks();
-          saveToLocalStorage();
-
-          const subtaskList = document.getElementById(`subtaskList_${taskId}`);
-          subtaskList.classList.remove('hidden');
-          const toggleButton = subtaskList.parentNode.querySelector('.toggle-subtasks');
-          toggleButton.textContent = 'Ocultar Subtareas';
-
-          const taskElement = document.querySelector(`li[data-task-id="${taskId}"]`);
-          const percentageElement = taskElement.querySelector('.completion-percentage');
-          if (percentageElement) {
-            percentageElement.textContent = `${calculateCompletionPercentage(task)}% completado`;
-          }
-        }
-      }
-    }
-
-    function calculateCompletionPercentage(task) {
-      if (task.subtasks.length === 0) return 0;
-      const completedSubtasks = task.subtasks.filter(subtask => subtask.completed).length;
-      return Math.round((completedSubtasks / task.subtasks.length) * 100);
-    }
-
-    function updateTaskCompletion(task) {
-      if (task.subtasks.length > 0 && task.subtasks.every(st => st.completed)) {
-        task.completed = true;
-        completedTasks.push(task);
-        tasks = tasks.filter(t => t.id !== task.id);
-        alert(`¡Tarea "${task.name}" completada! Puede encontrarla en "Mostrar Tareas Completadas".`);
-        saveToLocalStorage();
-      } else {
-        task.completed = false;
-      }
-    }
-
-    function deleteTask(taskId) {
-      tasks = tasks.filter(t => t.id !== taskId);
-      renderTasks();
-      saveToLocalStorage();
-    }
-
-    function deleteSubtask(taskId, subtaskId) {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        task.subtasks = task.subtasks.filter(st => st.id !== subtaskId);
-        updateTaskCompletion(task);
-        renderTasks();
-        saveToLocalStorage();
-      }
-    }
-
-    function restoreTask(taskId) {
-      const taskIndex = completedTasks.findIndex(t => t.id === taskId);
-      if (taskIndex !== -1) {
-        const task = completedTasks.splice(taskIndex, 1)[0];
-        task.completed = false;
-        task.subtasks.forEach(st => st.completed = false);
-        tasks.push(task);
-        renderTasks();
-        showCompletedTasks();
-        alert("Tarea restaurada con éxito.");
-        saveToLocalStorage();
-      }
-    }
-
-    function editTask(taskId) {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        const newName = prompt("Editar tarea", task.name);
-        const newStartDate = prompt("Nueva fecha de inicio (YYYY-MM-DD)", task.startDate);
-        const newEndDate = prompt("Nueva fecha de finalización (YYYY-MM-DD)", task.endDate);
-        const newTime = prompt("Nueva hora (HH:MM)", task.time);
-        if (newName !== null && newStartDate !== null && newEndDate !== null && newTime !== null) {
-          task.name = newName.trim();
-          task.startDate = newStartDate;
-          task.endDate = newEndDate;
-          task.time = newTime;
-          renderTasks();
-          saveToLocalStorage();
-        }
-      }
-    }
-
-    function editSubtask(taskId, subtaskId) {
-      const task = tasks.find(t => t.id === taskId);
-      if (task) {
-        const subtask = task.subtasks.find(st => st.id === subtaskId);
-        if (subtask) {
-          const newName = prompt("Editar subtarea", subtask.name);
-          if (newName !== null) {
-            subtask.name = newName.trim();
-            renderTasks();
-            saveToLocalStorage();
-          }
-        }
-      }
-    }
-
-    function renderTasks() {
-      const taskContainer = document.getElementById('taskContainer');
-      taskContainer.innerHTML = '';
-
-      const groupedTasks = groupTasksByDate(tasks);
-
-      for (const [dateStr, tasksForDate] of Object.entries(groupedTasks)) {
-        const dateGroup = document.createElement('div');
-        dateGroup.className = 'date-group';
-
-        const dateHeader = document.createElement('h3');
-        dateHeader.className = 'date-header';
-        dateHeader.textContent = dateStr;
-        dateGroup.appendChild(dateHeader);
-
-        const taskList = document.createElement('ul');
-        taskList.className = 'task-list';
-
-        tasksForDate.forEach(task => {
-          const taskItem = createTaskElement(task);
-          taskItem.setAttribute('data-task-id', task.id);
-          taskList.appendChild(taskItem);
-        });
-
-        dateGroup.appendChild(taskList);
-        taskContainer.appendChild(dateGroup);
-      }
-    }
-
-    function groupTasksByDate(tasks) {
-      const grouped = {};
+  <ul id="taskList" class="task-list"></ul>
+</div>
+
+<script>
+class TaskManager {
+  constructor() {
+    this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const setExpandedFalse = (tasks) => {
       tasks.forEach(task => {
-        const startDate = new Date(task.startDate + 'T00:00:00');
-        const dateStr = formatDate(startDate);
-        if (!grouped[dateStr]) {
-          grouped[dateStr] = [];
+        task.expanded = !1;
+        if (task.subtasks && task.subtasks.length) {
+          setExpandedFalse(task.subtasks);
         }
-        grouped[dateStr].push(task);
       });
-
-      for (const dateStr in grouped) {
-        grouped[dateStr].sort((a, b) => a.time.localeCompare(b.time));
+    };
+    setExpandedFalse(this.tasks);
+    this.showCompleted = !1;
+    this.draggedTask = null;
+    this.init();
+  }
+  
+  init() {
+    this.setupEventListeners();
+    this.render();
+  }
+  
+  setupEventListeners() {
+    document.getElementById('addTask').addEventListener('click', () => this.addTask());
+    document.getElementById('toggleCompleted').addEventListener('click', () => this.toggleCompletedView());
+    document.getElementById('exportData').addEventListener('click', () => this.exportData());
+    document.getElementById('importData').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        this.importData(e.target.files[0]);
       }
+    });
+  
+    const taskList = document.getElementById('taskList');
+    taskList.addEventListener('dragstart', (e) => this.handleDragStart(e));
+    taskList.addEventListener('dragend', (e) => this.handleDragEnd(e));
+    taskList.addEventListener('dragover', (e) => this.handleDragOver(e));
+    taskList.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+    taskList.addEventListener('drop', (e) => this.handleDrop(e));
+  
+    const topDropZone = document.getElementById('dropZoneTop');
+    topDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      topDropZone.classList.add('active');
+    });
+    topDropZone.addEventListener('dragleave', () => {
+      topDropZone.classList.remove('active');
+    });
+    topDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      topDropZone.classList.remove('active');
+      if (this.draggedTask) {
+        this.moveTaskToTop(this.draggedTask);
+      }
+    });
+  }
+  
+  calculateCompletion(task) {
+    let total = 0;
+    let completed = 0;
 
-      const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
-      const sortedGrouped = {};
-      sortedDates.forEach(date => {
-        sortedGrouped[date] = grouped[date];
+    const countTasks = (t) => {
+      if (t.subtasks && t.subtasks.length > 0) {
+        t.subtasks.forEach(st => {
+          const stats = countTasks(st);
+          total += stats.total;
+          completed += stats.completed;
+        });
+        return { total, completed };
+      } else {
+        return { total: 1, completed: t.completed ? 1 : 0 };
+      }
+    };
+    const stats = countTasks(task);
+    return { total: stats.total, completed: stats.completed, percentage: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0 };
+  }
+  
+  updateTaskCompletion(task) {
+    if (!task.subtasks || task.subtasks.length === 0) return;
+    const allSubtasksCompleted = task.subtasks.every(st => {
+      this.updateTaskCompletion(st);
+      return st.completed;
+    });
+    task.completed = allSubtasksCompleted;
+    return allSubtasksCompleted;
+  }
+  
+  exportData() {
+    const dataStr = JSON.stringify(this.tasks, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tasks.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  importData(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        data.forEach(task => task.expanded = !1);
+        this.tasks = data;
+        this.saveAndRender();
+      } catch (err) {
+        alert('Error al importar el archivo: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  moveTaskToTop(taskId) {
+    const findAndRemoveTask = (tasks) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === taskId) {
+          return tasks.splice(i, 1)[0];
+        }
+        if (tasks[i].subtasks && tasks[i].subtasks.length) {
+          const found = findAndRemoveTask(tasks[i].subtasks);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const task = findAndRemoveTask(this.tasks);
+    if (task) {
+      this.tasks.unshift(task);
+      this.saveAndRender();
+    }
+  }
+
+  handleDragStart(e) {
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      this.draggedTask = taskItem.dataset.taskId;
+      taskItem.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', taskItem.dataset.taskId);
+    }
+  }
+
+  handleDragEnd(e) {
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      taskItem.classList.remove('dragging');
+    }
+    this.draggedTask = null;
+    document.querySelectorAll('.task-item').forEach(item => {
+      item.classList.remove('drag-over');
+    });
+    document.getElementById('dropZoneTop').classList.remove('active');
+  }
+
+  handleDragOver(e) {
+    e.preventDefault();
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      document.querySelectorAll('.task-item').forEach(item => {
+        item.classList.remove('drag-over');
       });
-
-      return sortedGrouped;
+      taskItem.classList.add('drag-over');
     }
+  }
 
-    function formatDate(date) {
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      return date.toLocaleDateString('es-ES', options);
+  handleDragLeave(e) {
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      taskItem.classList.remove('drag-over');
     }
+  }
 
-    function createTaskElement(task) {
-      const taskItem = document.createElement('li');
-      taskItem.className = 'task-item';
-      const completionPercentage = calculateCompletionPercentage(task);
-      taskItem.innerHTML = `
-    <div class="task-header">
-      <span class="task-name">${task.name}</span>
-      <span class="task-dates">
-        ${task.startDate}${task.startDate !== task.endDate ? ' - ' + task.endDate : ''} | ${task.time}
-      </span>
-      ${task.subtasks.length > 0 ? `<span class="completion-percentage">${completionPercentage}% completado</span>` : ''}
-    </div>
-    <div class="task-buttons">
-      <button onclick="editTask(${task.id})">Editar</button>
-      <button onclick="deleteTask(${task.id})">Eliminar</button>
-      <button class="toggle-subtasks" onclick="toggleSubtasks(${task.id})">Mostrar Subtareas</button>
-    </div>
-    <div id="subtaskContainer_${task.id}" class="subtask-container hidden">
-      <input type="text" id="subtaskInput_${task.id}" placeholder="Nueva subtarea">
-      <button onclick="addSubtask(${task.id})">+</button>
-    </div>
-  `;
+  addTask(parentId = null) {
+    const today = new Date();
+    today.setDate(today.getDate()); // Remove +1 since we want current date
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + 2); // End date is 2 days from today
 
-      const subtaskList = createSubtaskList(task);
+    const newTask = {
+    id: Date.now().toString(),
+    title: 'Nueva tarea',
+    completed: false,
+    subtasks: [],
+    startDate: today.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0],
+    expanded: false
+    };
 
-      taskItem.appendChild(subtaskList);
-      return taskItem;
+    if (parentId) {
+      this.addSubtask(parentId, newTask);
+    } else {
+      this.tasks.push(newTask);
     }
+    this.saveAndRender();
+  }
 
-    function toggleSubtasks(taskId) {
-      const subtaskList = document.getElementById(`subtaskList_${taskId}`);
-      const subtaskContainer = document.getElementById(`subtaskContainer_${taskId}`);
-      subtaskList.classList.toggle('hidden');
-      subtaskContainer.classList.toggle('hidden');
-      const toggleButton = subtaskList.parentNode.querySelector('.toggle-subtasks');
-      toggleButton.textContent = subtaskList.classList.contains('hidden') ? 'Mostrar Subtareas' : 'Ocultar Subtareas';
+  addSubtask(parentId, subtask) {
+    const findAndAddSubtask = (tasks) => {
+      for (let task of tasks) {
+        if (task.id === parentId) {
+          task.subtasks = task.subtasks || [];
+          task.subtasks.push(subtask);
+          task.expanded = true;
+          return !0;
+        }
+        if (task.subtasks && task.subtasks.length && findAndAddSubtask(task.subtasks)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    findAndAddSubtask(this.tasks);
+    this.saveAndRender();
+  }
+
+  toggleComplete(taskId) {
+    const toggleTask = (tasks) => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          if (!task.subtasks || task.subtasks.length === 0) {
+            task.completed = !task.completed;
+            this.updateParentTasksCompletion();
+            return !0;
+          }
+          return !1;
+        }
+        if (task.subtasks && task.subtasks.length && toggleTask(task.subtasks)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    toggleTask(this.tasks);
+    this.saveAndRender();
+  }
+
+  deleteTask(taskId) {
+    const deleteFromArray = (tasks) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === taskId) {
+          tasks.splice(i, 1);
+          return !0;
+        }
+        if (tasks[i].subtasks && tasks[i].subtasks.length && deleteFromArray(tasks[i].subtasks)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    deleteFromArray(this.tasks);
+    this.saveAndRender();
+  }
+
+  updateTaskTitle(taskId, newTitle) {
+    const updateTitle = (tasks) => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          task.title = newTitle;
+          return !0;
+        }
+        if (task.subtasks && task.subtasks.length && updateTitle(task.subtasks)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    updateTitle(this.tasks);
+    this.saveAndRender();
+  }
+
+  updateEndDate(taskId, newDate) {
+    const updateDate = (tasks) => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          task.endDate = newDate;
+          return !0;
+        }
+        if (task.subtasks && task.subtasks.length && updateDate(task.subtasks)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    updateDate(this.tasks);
+    this.saveAndRender();
+  }
+
+  promptEndDate(taskId) {
+    const task = this.findTask(taskId);
+    if (!task) return;
+    
+    const currentDate = new Date(task.endDate);
+    const dateStr = prompt('Ingrese la nueva fecha (YYYY-MM-DD):', task.endDate);
+    
+    if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      this.updateEndDate(taskId, dateStr);
+    } else if (dateStr !== null) {
+      alert('Formato de fecha inválido. Use YYYY-MM-DD');
     }
+  }
 
-    function showCompletedTasks() {
-      const completedTasksList = document.getElementById('completedTasksList');
-      completedTasksList.innerHTML = '';
+  findTask(taskId) {
+    const find = (tasks) => {
+      for (let task of tasks) {
+        if (task.id === taskId) return task;
+        if (task.subtasks && task.subtasks.length) {
+          const found = find(task.subtasks);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return find(this.tasks);
+  }
 
-      completedTasks.forEach(task => {
-        const taskItem = document.createElement('li');
-        taskItem.className = 'completed-task-item';
-        taskItem.innerHTML = `
-      <div class="task-header">
-        <span class="task-name">${task.name}</span>
-        <div class="task-dates">
-          <span>Inicio: ${task.startDate}</span>
-          <span>Fin: ${task.endDate}</span>
-          <span>Hora: ${task.time}</span>
+  toggleExpanded(taskId) {
+    const toggleTask = (tasks) => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          task.expanded = !task.expanded;
+          document.body.offsetHeight;
+          return !0;
+        }
+        if (task.subtasks && task.subtasks.length && toggleTask(task.subtasks)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    toggleTask(this.tasks);
+    this.saveAndRender();
+  }
+
+  handleDrop(e) {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('text/plain');
+    const dropTarget = e.target.closest('.task-item');
+    if (e.target.id === 'dropZoneTop') {
+      this.moveTaskToTop(draggedId);
+      return;
+    }
+    if (dropTarget && draggedId !== dropTarget.dataset.taskId) {
+      this.reorderTasks(draggedId, dropTarget.dataset.taskId);
+    }
+  }
+
+  reorderTasks(draggedId, targetId) {
+    if (!targetId) {
+      this.moveTaskToTop(draggedId);
+      return;
+    }
+    const findAndRemoveTask = (tasks) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === draggedId) {
+          return tasks.splice(i, 1)[0];
+        }
+        if (tasks[i].subtasks && tasks[i].subtasks.length) {
+          const found = findAndRemoveTask(tasks[i].subtasks);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const insertTask = (tasks, task) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === targetId) {
+          tasks.splice(i, 0, task);
+          return !0;
+        }
+        if (tasks[i].subtasks && tasks[i].subtasks.length && insertTask(tasks[i].subtasks, task)) {
+          return !0;
+        }
+      }
+      return !1;
+    };
+    const draggedTask = findAndRemoveTask(this.tasks);
+    if (draggedTask) {
+      insertTask(this.tasks, draggedTask);
+      this.saveAndRender();
+    }
+  }
+
+  saveAndRender() {
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+    this.render();
+  }
+
+  render() {
+    const taskList = document.getElementById('taskList');
+    const tasksToRender = this.tasks.filter(task => {
+      if (this.showCompleted) {
+        return task.completed;
+      } else {
+        return !task.completed;
+      }
+    });
+    taskList.innerHTML = tasksToRender.map(task => this.renderTask(task)).join('');
+  }
+
+  renderTask(task, level = 0) {
+    if (!task) return '';
+    const completionStats = this.calculateCompletion(task);
+    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+    return `
+      <li class="task-item ${task.completed ? 'completed' : ''}" 
+          data-task-id="${task.id}" 
+          draggable="true">
+        <div class="task-header">
+          <span class="drag-handle">☰</span>
+          ${(!hasSubtasks) ? `<input type="checkbox"
+${task.completed ? 'checked' : ''}
+onchange="taskManager.toggleComplete('${task.id}')">` : ''}
+          <h3 class="task-title" 
+          contenteditable="true" 
+          onblur="taskManager.updateTaskTitle('${task.id}', this.textContent)">${task.title}</h3>
+        <span class="task-date">
+          ${this.formatDate(task.startDate)} - 
+          <span class="date-text" onclick="taskManager.promptEndDate('${task.id}')">
+            ${this.formatDate(task.endDate)}
+          </span>
+        </span>
+          <span class="task-percentage">
+            ${completionStats.percentage}% completado
+          </span>
+          ${hasSubtasks ? `<button class="toggle-btn" onclick="taskManager.toggleExpanded('${task.id}')">${task.expanded ? '▼' : '▶'}</button>` : ''}
+          <button class="add-subtask-btn" onclick="taskManager.addTask('${task.id}')">+</button>
+          <button class="delete-btn" onclick="taskManager.deleteTask('${task.id}')">×</button>
         </div>
-      </div>
-      <div class="task-buttons">
-        <button onclick="editCompletedTask(${task.id})">Editar</button>
-        <button onclick="restoreTask(${task.id})">Restaurar</button>
-        <button class="toggle-subtasks" onclick="toggleCompletedSubtasks(${task.id})">Mostrar Subtareas</button>
-      </div>
+        ${hasSubtasks ? `<ul class="subtask-list ${task.expanded ? 'expanded' : ''}">${task.subtasks.map(subtask => this.renderTask(subtask, level + 1)).join('')}</ul>` : ''}
+      </li>
     `;
+  }
 
-        const subtaskList = createSubtaskList(task, true);
-        taskItem.appendChild(subtaskList);
+  formatDate(dateStr) {
+    const date = new Date(dateStr);
+    const days = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
-        completedTasksList.appendChild(taskItem);
-      });
+    return `${days[date.getDay()]}, ${date.getDate()}, ${months[date.getMonth()]}, ${date.getFullYear()}`;
+  }
 
-      document.getElementById('completedTasksModal').style.display = 'block';
-      document.body.classList.add('modal-open'); // Add class to body when modal is open
-    }
+  toggleCompletedView() {
+    this.showCompleted = !this.showCompleted;
+    document.getElementById('toggleCompleted').textContent = this.showCompleted ? 'Ver Pendientes' : 'Ver Completadas';
+    document.getElementById('viewTitle').textContent = this.showCompleted ? 'Tareas completadas' : 'Tareas pendientes';
+    this.render();
+  }
 
-    function editCompletedTask(taskId) {
-      const task = completedTasks.find(t => t.id === taskId);
-      if (task) {
-        const newName = prompt("Editar tarea completada", task.name);
-        const newStartDate = prompt("Nueva fecha de inicio (YYYY-MM-DD)", task.startDate);
-        const newEndDate = prompt("Nueva fecha de finalización (YYYY-MM-DD)", task.endDate);
-        const newTime = prompt("Nueva hora (HH:MM)", task.time);
-        if (newName !== null && newStartDate !== null && newEndDate !== null && newTime !== null) {
-          task.name = newName.trim();
-          task.startDate = newStartDate;
-          task.endDate = newEndDate;
-          task.time = newTime;
-          showCompletedTasks();
-          saveToLocalStorage();
-        }
-      }
-    }
-
-    function toggleCompletedSubtasks(taskId) {
-      const subtaskList = document.getElementById(`completedSubtaskList_${taskId}`);
-      subtaskList.classList.toggle('hidden');
-      const toggleButton = subtaskList.parentNode.querySelector('.toggle-subtasks');
-      toggleButton.textContent = subtaskList.classList.contains('hidden') ? 'Mostrar Subtareas' : 'Ocultar Subtareas';
-    }
-
-    function createSubtaskList(task, isCompleted = false) {
-      const subtaskList = document.createElement('ul');
-      subtaskList.className = 'subtask-list hidden';
-      subtaskList.id = isCompleted ? `completedSubtaskList_${task.id}` : `subtaskList_${task.id}`;
-
-      task.subtasks.forEach(subtask => {
-        const subtaskItem = document.createElement('li');
-        subtaskItem.className = 'subtask-item';
-        subtaskItem.innerHTML = `
-      <label class="checkbox-wrapper">
-        <input type="checkbox" ${subtask.completed ? 'checked' : ''} ${isCompleted ? 'disabled' : ''} onchange="toggleSubtaskCompletion(${task.id}, ${subtask.id})">
-        <span class="checkmark"></span>
-        ${subtask.name}
-      </label>
-      ${isCompleted ? '' : `
-        <button onclick="editSubtask(${task.id}, ${subtask.id})">Editar</button>
-        <button onclick="deleteSubtask(${task.id}, ${subtask.id})">Eliminar</button>
-      `}
-    `;
-        subtaskList.appendChild(subtaskItem);
-      });
-
-      return subtaskList;
-    }
-
-    function closeModal() {
-      document.getElementById('completedTasksModal').style.display = 'none';
-      document.body.classList.remove('modal-open'); // Remove class from body when modal is closed
-    }
-
-    window.onclick = function (event) {
-      const modal = document.getElementById('completedTasksModal');
-      if (event.target == modal) {
-        closeModal();
-      }
-    }
-
-    loadFromLocalStorage();
-    renderTasks();
-  </script>
-
-
-
-
-</body>
-
-</html>
+  updateParentTasksCompletion() {
+    this.tasks.forEach(task => this.updateTaskCompletion(task));
+  }
+}
+const taskManager = new TaskManager();
+</script>
+</body></html>
