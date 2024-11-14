@@ -1,0 +1,204 @@
+:root {
+  --primary: #4caf50;
+  --secondary: black;
+  --text: #ffffff;
+  --completed: #2e7d32;
+  --surface: #2d2d2d;
+  --hover: #3d3d3d;
+  --shadow: rgba(0, 0, 0, 0.2);
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 20px;
+  /* Reduced from 30px */
+  background: var(--secondary);
+  color: var(--text);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--primary);
+  font-size: 2.2em;
+  margin-bottom: 4px;
+  /* Reduced from 8px */
+  font-weight: 600;
+}
+
+h2 {
+  color: var(--text);
+  font-size: 1.4em;
+  margin-bottom: 20px;
+  /* Reduced from 30px */
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.task-controls {
+  margin-bottom: 15px;
+  /* Reduced from 25px */
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--secondary);
+  font-weight: 600;
+  background: #00d26a;
+  font-size: 0.95em;
+}
+
+.btn:hover {
+  background: black;
+  color: white;
+  opacity: 0.9;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-item {
+  background: black;
+  color: var(--text);
+  padding: 12px;
+  /* Reduced from 18px */
+  /* margin-bottom: 10px; */
+  /* Reduced from 15px */
+  /* border-radius: 12px; */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-title {
+  font-size: 1.1em;
+  font-weight: 300;
+  /* padding: 8px 12px; */
+  /* border-radius: 6px; */
+  flex-grow: 1;
+  margin: 0;
+  cursor: text;
+  border: 1px solid #535353;
+  border-top: none;
+  border-right: none;
+}
+
+.task-date {
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.task-percentage {
+  color: var(--primary);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-left: 12px;
+}
+
+.subtask-list {
+  margin-left: 28px;
+  padding-left: 18px;
+  border-left: 2px solid var(--primary);
+  display: none;
+  margin-top: 8px;
+  /* Reduced from 12px */
+  margin-bottom: 8px;
+  /* Reduced from 12px */
+}
+
+.subtask-list.expanded {
+  display: block;
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.toggle-btn,
+.delete-btn,
+.add-subtask-btn {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.delete-btn {
+  color: #ff5252;
+}
+
+.add-subtask-btn,
+.drag-handle {
+  color: var(--primary);
+}
+
+[draggable="true"] {
+  cursor: move;
+}
+
+.drag-handle {
+  opacity: 0.8;
+  cursor: move;
+  margin-right: 6px;
+  padding: 0 5px;
+}
+
+.date-text {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.date-text:hover {
+  background: var(--hover);
+}
+
+.drop-zone {
+  height: 10px;
+  margin: 5px 0;
+  transition: height 0.2s;
+  border-radius: 4px;
+}
+
+.drop-zone.active {
+  height: 40px;
+  border: 2px dashed var(--primary);
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.task-item.drag-over {
+  border: 2px dashed var(--primary);
+}
+
+.date-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+li.task-item::marker {
+  color: transparent;
+}
