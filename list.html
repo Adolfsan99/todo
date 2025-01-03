@@ -1,485 +1,596 @@
 <html>
-
 <head>
-  <!--<base href="https://adolfsan99.github.io/miniprograma/todo.html">-->
-  <title>List.html</title>
-  <link rel="icon" type="image/x-icon" href="favicon.png">
-  <link rel="stylesheet" href="list.css">
+<base href="https://adolfsan99.github.io/miniprograma/todo.html">
+<title>List.html</title>
+<style>
+:root {
+  --primary: #4caf50;
+  --secondary: black;
+  --text: #ffffff;
+  --completed: #2e7d32;
+  --surface: #2d2d2d;
+  --hover: #3d3d3d;
+  --shadow: rgba(0, 0, 0, 0.2);
+}
 
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: var(--secondary);
+  color: var(--text);
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--primary);
+  font-size: 2.2em;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+h2 {
+  color: var(--text);
+  font-size: 1.4em;
+  margin-bottom: 20px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.total-percentage {
+  color: var(--primary);
+  font-size: 1.1em;
+  margin-top: -15px;
+  margin-bottom: 20px;
+}
+
+.task-controls {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--secondary);
+  font-weight: 600;
+  background: #00d26a;
+  font-size: 0.95em;
+}
+
+.btn:hover {
+  background: black;
+  color: white;
+  opacity: 0.9;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-item {
+  background: black;
+  color: var(--text);
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-title {
+  font-size: 1.1em;
+  font-weight: 300;
+  flex-grow: 1;
+  margin: 0;
+  cursor: text;
+  border: 1px solid #535353;
+  border-top: none;
+  border-right: none;
+}
+
+.task-date {
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.task-percentage {
+  color: var(--primary);
+  font-weight: 500;
+  font-size: 0.9em;
+  margin-left: 12px;
+}
+
+.subtask-list {
+  margin-left: 28px;
+  padding-left: 18px;
+  border-left: 2px solid var(--primary);
+  display: none;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.subtask-list.expanded {
+  display: block;
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.toggle-btn,
+.delete-btn,
+.add-subtask-btn {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.delete-btn {
+  color: #ff5252;
+}
+
+.add-subtask-btn,
+.drag-handle {
+  color: var(--primary);
+}
+
+[draggable="true"] {
+  cursor: move;
+}
+
+.drag-handle {
+  opacity: 0.8;
+  cursor: move;
+  margin-right: 6px;
+  padding: 0 5px;
+}
+
+.date-text {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.date-text:hover {
+  background: var(--hover);
+}
+
+.drop-zone {
+  height: 10px;
+  margin: 5px 0;
+  transition: height 0.2s;
+  border-radius: 4px;
+}
+
+.drop-zone.active {
+  height: 40px;
+  border: 2px dashed var(--primary);
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.task-item.drag-over {
+  border: 2px dashed var(--primary);
+}
+
+.date-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+li.task-item::marker {
+  color: transparent;
+}
+</style>
 </head>
-
 <body>
   <div class="container">
-    <h1>✅List.html</h1>
+    <h1>&#x2705;List.html</h1>
     <h2 id="viewTitle">Tareas pendientes</h2>
+    <h2 class="total-percentage" id="totalPercentage">0% completado en total</h2>
     <div id="dropZoneTop" class="drop-zone"></div>
     <div class="task-controls">
       <button id="addTask" class="btn">+ Nueva Tarea</button>
       <button id="toggleCompleted" class="btn">Ver Completadas</button>
       <button id="exportData" class="btn">Exportar JSON</button>
       <button id="importData" class="btn">Importar JSON</button>
+      <button id="toggleAllTasks" class="btn">Expandir Todo</button>
       <input type="file" id="importFile" style="display: none" accept=".json">
     </div>
     <ul id="taskList" class="task-list"></ul>
   </div>
 
-  <script>
-    class TaskManager {
-      constructor() {
-        this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        const setExpandedFalse = (tasks) => {
-          tasks.forEach(task => {
-            task.expanded = !1;
-            if (task.subtasks && task.subtasks.length) {
-              setExpandedFalse(task.subtasks);
-            }
-          });
-        };
-        setExpandedFalse(this.tasks);
-        this.showCompleted = !1;
-        this.draggedTask = null;
-        this.init();
+<script>class TaskManager {
+  constructor() {
+    this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    this.showCompleted = false;
+    this.draggedTask = null;
+    this.allExpanded = false;
+    this.init();
+    this.updateTotalPercentage();
+  }
+  init() {
+    this.setupEventListeners();
+    this.render();
+  }
+  setupEventListeners() {
+    document.getElementById('addTask').addEventListener('click', () => this.addTask());
+    document.getElementById('toggleCompleted').addEventListener('click', () => this.toggleCompletedView());
+    document.getElementById('exportData').addEventListener('click', () => this.exportData());
+    document.getElementById('importData').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+    document.getElementById('importFile').addEventListener('change', e => {
+      if (e.target.files.length > 0) {
+        this.importData(e.target.files[0]);
       }
-
-      init() {
-        this.setupEventListeners();
-        this.render();
+    });
+    document.getElementById('toggleAllTasks').addEventListener('click', () => this.toggleAllTasks());
+    const taskList = document.getElementById('taskList');
+    taskList.addEventListener('dragstart', e => this.handleDragStart(e));
+    taskList.addEventListener('dragend', e => this.handleDragEnd(e));
+    taskList.addEventListener('dragover', e => this.handleDragOver(e));
+    taskList.addEventListener('dragleave', e => this.handleDragLeave(e));
+    taskList.addEventListener('drop', e => this.handleDrop(e));
+    const topDropZone = document.getElementById('dropZoneTop');
+    topDropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      topDropZone.classList.add('active');
+    });
+    topDropZone.addEventListener('dragleave', () => {
+      topDropZone.classList.remove('active');
+    });
+    topDropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      topDropZone.classList.remove('active');
+      if (this.draggedTask) {
+        this.moveTaskToTop(this.draggedTask);
       }
-
-      setupEventListeners() {
-        document.getElementById('addTask').addEventListener('click', () => this.addTask());
-        document.getElementById('toggleCompleted').addEventListener('click', () => this.toggleCompletedView());
-        document.getElementById('exportData').addEventListener('click', () => this.exportData());
-        document.getElementById('importData').addEventListener('click', () => {
-          document.getElementById('importFile').click();
-        });
-        document.getElementById('importFile').addEventListener('change', (e) => {
-          if (e.target.files.length > 0) {
-            this.importData(e.target.files[0]);
+    });
+  }
+  addTask(parentId = null) {
+    if (this.showCompleted) {
+      if (confirm('¿Desea cambiar a la vista de tareas pendientes para crear una nueva tarea?')) {
+        this.showCompleted = false;
+        document.getElementById('viewTitle').textContent = 'Tareas Pendientes';
+        document.getElementById('toggleCompleted').textContent = 'Ver Completadas';
+      } else {
+        return;
+      }
+    }
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + 2);
+    const newTask = {
+      id: Date.now().toString(),
+      title: 'Nueva tarea',
+      completed: false,
+      subtasks: [],
+      startDate: today.toISOString().split('T')[0],
+      endDate: endDate.toISOString().split('T')[0],
+      expanded: false
+    };
+    if (parentId) {
+      this.addSubtask(parentId, newTask);
+    } else {
+      this.tasks.push(newTask);
+    }
+    this.saveAndRender();
+  }
+  addSubtask(parentId, subtask) {
+    const findAndAddSubtask = tasks => {
+      for (let task of tasks) {
+        if (task.id === parentId) {
+          task.subtasks = task.subtasks || [];
+          task.subtasks.push(subtask);
+          task.expanded = true;
+          return true;
+        }
+        if (task.subtasks && task.subtasks.length && findAndAddSubtask(task.subtasks)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    findAndAddSubtask(this.tasks);
+    this.saveAndRender();
+  }
+  toggleComplete(taskId) {
+    const toggleTaskComplete = tasks => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          task.completed = !task.completed;
+          if (task.subtasks) {
+            const toggleSubtasks = subtasks => {
+              subtasks.forEach(subtask => {
+                subtask.completed = task.completed;
+                if (subtask.subtasks) {
+                  toggleSubtasks(subtask.subtasks);
+                }
+              });
+            };
+            toggleSubtasks(task.subtasks);
           }
-        });
-
-        const taskList = document.getElementById('taskList');
-        taskList.addEventListener('dragstart', (e) => this.handleDragStart(e));
-        taskList.addEventListener('dragend', (e) => this.handleDragEnd(e));
-        taskList.addEventListener('dragover', (e) => this.handleDragOver(e));
-        taskList.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-        taskList.addEventListener('drop', (e) => this.handleDrop(e));
-
-        const topDropZone = document.getElementById('dropZoneTop');
-        topDropZone.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          topDropZone.classList.add('active');
-        });
-        topDropZone.addEventListener('dragleave', () => {
-          topDropZone.classList.remove('active');
-        });
-        topDropZone.addEventListener('drop', (e) => {
-          e.preventDefault();
-          topDropZone.classList.remove('active');
-          if (this.draggedTask) {
-            this.moveTaskToTop(this.draggedTask);
-          }
-        });
-      }
-
-      calculateCompletion(task) {
-        let total = 0;
-        let completed = 0;
-
-        const countTasks = (t) => {
-          if (t.subtasks && t.subtasks.length > 0) {
-            t.subtasks.forEach(st => {
-              const stats = countTasks(st);
-              total += stats.total;
-              completed += stats.completed;
-            });
-            return { total, completed };
-          } else {
-            return { total: 1, completed: t.completed ? 1 : 0 };
-          }
-        };
-        const stats = countTasks(task);
-        return { total: stats.total, completed: stats.completed, percentage: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0 };
-      }
-
-      updateTaskCompletion(task) {
-        if (!task.subtasks || task.subtasks.length === 0) return;
-        const allSubtasksCompleted = task.subtasks.every(st => {
-          this.updateTaskCompletion(st);
-          return st.completed;
-        });
-        task.completed = allSubtasksCompleted;
-        return allSubtasksCompleted;
-      }
-
-      exportData() {
-        const dataStr = JSON.stringify(this.tasks, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'tasks.json';
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
-      importData(file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const data = JSON.parse(e.target.result);
-            data.forEach(task => task.expanded = !1);
-            this.tasks = data;
-            this.saveAndRender();
-          } catch (err) {
-            alert('Error al importar el archivo: ' + err.message);
-          }
-        };
-        reader.readAsText(file);
-      }
-
-      moveTaskToTop(taskId) {
-        const findAndRemoveTask = (tasks) => {
-          for (let i = 0; i < tasks.length; i++) {
-            if (tasks[i].id === taskId) {
-              return tasks.splice(i, 1)[0];
-            }
-            if (tasks[i].subtasks && tasks[i].subtasks.length) {
-              const found = findAndRemoveTask(tasks[i].subtasks);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-        const task = findAndRemoveTask(this.tasks);
-        if (task) {
-          this.tasks.unshift(task);
-          this.saveAndRender();
+          return true;
+        }
+        if (task.subtasks && task.subtasks.length && toggleTaskComplete(task.subtasks)) {
+          return true;
         }
       }
-
-      handleDragStart(e) {
-        const taskItem = e.target.closest('.task-item');
-        if (taskItem) {
-          this.draggedTask = taskItem.dataset.taskId;
-          taskItem.classList.add('dragging');
-          e.dataTransfer.setData('text/plain', taskItem.dataset.taskId);
-        }
-      }
-
-      handleDragEnd(e) {
-        const taskItem = e.target.closest('.task-item');
-        if (taskItem) {
-          taskItem.classList.remove('dragging');
-        }
-        this.draggedTask = null;
-        document.querySelectorAll('.task-item').forEach(item => {
-          item.classList.remove('drag-over');
-        });
-        document.getElementById('dropZoneTop').classList.remove('active');
-      }
-
-      handleDragOver(e) {
-        e.preventDefault();
-        const taskItem = e.target.closest('.task-item');
-        if (taskItem) {
-          document.querySelectorAll('.task-item').forEach(item => {
-            item.classList.remove('drag-over');
-          });
-          taskItem.classList.add('drag-over');
-        }
-      }
-
-      handleDragLeave(e) {
-        const taskItem = e.target.closest('.task-item');
-        if (taskItem) {
-          taskItem.classList.remove('drag-over');
-        }
-      }
-
-      addTask(parentId = null) {
-        const today = new Date();
-        today.setDate(today.getDate()); // Remove +1 since we want current date
-        const endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 2); // End date is 2 days from today
-
-        const newTask = {
-          id: Date.now().toString(),
-          title: 'Nueva tarea',
-          completed: false,
-          subtasks: [],
-          startDate: today.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0],
-          expanded: false
-        };
-
-        if (parentId) {
-          this.addSubtask(parentId, newTask);
-        } else {
-          this.tasks.push(newTask);
-        }
+      return false;
+    };
+    toggleTaskComplete(this.tasks);
+    this.saveAndRender();
+  }
+  updateTaskTitle(taskId, newTitle) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+      task.title = newTitle;
+      this.saveAndRender();
+    }
+  }
+  deleteTask(taskId) {
+    this.tasks = this.tasks.filter(t => t.id !== taskId);
+    this.saveAndRender();
+  }
+  moveTaskToTop(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+      this.tasks = this.tasks.filter(t => t.id !== taskId);
+      this.tasks.unshift(task);
+      this.saveAndRender();
+    }
+  }
+  handleDragStart(e) {
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      this.draggedTask = taskItem.id;
+      taskItem.classList.add('dragging');
+    }
+  }
+  handleDragEnd(e) {
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      taskItem.classList.remove('dragging');
+      this.draggedTask = null;
+    }
+  }
+  handleDragOver(e) {
+    e.preventDefault();
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      taskItem.classList.add('drag-over');
+    }
+  }
+  handleDragLeave(e) {
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem) {
+      taskItem.classList.remove('drag-over');
+    }
+  }
+  handleDrop(e) {
+    e.preventDefault();
+    const taskItem = e.target.closest('.task-item');
+    if (taskItem && this.draggedTask && this.draggedTask !== taskItem.id) {
+      this.moveTask(this.draggedTask, taskItem.id);
+    }
+  }
+  moveTask(fromId, toId) {
+    const fromIndex = this.tasks.findIndex(t => t.id === fromId);
+    const toIndex = this.tasks.findIndex(t => t.id === toId);
+    if (fromIndex !== -1 && toIndex !== -1) {
+      const [task] = this.tasks.splice(fromIndex, 1);
+      this.tasks.splice(toIndex, 0, task);
+      this.saveAndRender();
+    }
+  }
+  exportData() {
+    const dataStr = JSON.stringify(this.tasks, null, 2);
+    const blob = new Blob([dataStr], {
+      type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tasks.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  importData(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        this.tasks = JSON.parse(e.target.result);
         this.saveAndRender();
+      } catch (err) {
+        console.error('Error importing file:', err);
+        alert('Error importing file. Please check the file format.');
       }
-
-      addSubtask(parentId, subtask) {
-        const findAndAddSubtask = (tasks) => {
-          for (let task of tasks) {
-            if (task.id === parentId) {
-              task.subtasks = task.subtasks || [];
-              task.subtasks.push(subtask);
-              task.expanded = true;
-              return !0;
-            }
-            if (task.subtasks && task.subtasks.length && findAndAddSubtask(task.subtasks)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        findAndAddSubtask(this.tasks);
-        this.saveAndRender();
-      }
-
-      toggleComplete(taskId) {
-        const toggleTask = (tasks) => {
-          for (let task of tasks) {
-            if (task.id === taskId) {
-              if (!task.subtasks || task.subtasks.length === 0) {
-                task.completed = !task.completed;
-                this.updateParentTasksCompletion();
-                return !0;
-              }
-              return !1;
-            }
-            if (task.subtasks && task.subtasks.length && toggleTask(task.subtasks)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        toggleTask(this.tasks);
-        this.saveAndRender();
-      }
-
-      deleteTask(taskId) {
-        const deleteFromArray = (tasks) => {
-          for (let i = 0; i < tasks.length; i++) {
-            if (tasks[i].id === taskId) {
-              tasks.splice(i, 1);
-              return !0;
-            }
-            if (tasks[i].subtasks && tasks[i].subtasks.length && deleteFromArray(tasks[i].subtasks)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        deleteFromArray(this.tasks);
-        this.saveAndRender();
-      }
-
-      updateTaskTitle(taskId, newTitle) {
-        const updateTitle = (tasks) => {
-          for (let task of tasks) {
-            if (task.id === taskId) {
-              task.title = newTitle;
-              return !0;
-            }
-            if (task.subtasks && task.subtasks.length && updateTitle(task.subtasks)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        updateTitle(this.tasks);
-        this.saveAndRender();
-      }
-
-      updateEndDate(taskId, newDate) {
-        const updateDate = (tasks) => {
-          for (let task of tasks) {
-            if (task.id === taskId) {
-              task.endDate = newDate;
-              return !0;
-            }
-            if (task.subtasks && task.subtasks.length && updateDate(task.subtasks)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        updateDate(this.tasks);
-        this.saveAndRender();
-      }
-
-      promptEndDate(taskId) {
-        const task = this.findTask(taskId);
-        if (!task) return;
-
-        const currentDate = new Date(task.endDate);
-        const dateStr = prompt('Ingrese la nueva fecha (YYYY-MM-DD):', task.endDate);
-
-        if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          this.updateEndDate(taskId, dateStr);
-        } else if (dateStr !== null) {
-          alert('Formato de fecha inválido. Use YYYY-MM-DD');
+    };
+    reader.readAsText(file);
+  }
+  toggleCompletedView() {
+    this.showCompleted = !this.showCompleted;
+    document.getElementById('viewTitle').textContent = this.showCompleted ? 'Tareas Completadas' : 'Tareas Pendientes';
+    document.getElementById('toggleCompleted').textContent = this.showCompleted ? 'Ver Pendientes' : 'Ver Completadas';
+    this.render();
+  }
+  toggleExpanded(taskId) {
+    const findAndToggle = tasks => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          task.expanded = !task.expanded;
+          return true;
+        }
+        if (task.subtasks && task.subtasks.length && findAndToggle(task.subtasks)) {
+          return true;
         }
       }
-
-      findTask(taskId) {
-        const find = (tasks) => {
-          for (let task of tasks) {
-            if (task.id === taskId) return task;
-            if (task.subtasks && task.subtasks.length) {
-              const found = find(task.subtasks);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-        return find(this.tasks);
-      }
-
-      toggleExpanded(taskId) {
-        const toggleTask = (tasks) => {
-          for (let task of tasks) {
-            if (task.id === taskId) {
-              task.expanded = !task.expanded;
-              document.body.offsetHeight;
-              return !0;
-            }
-            if (task.subtasks && task.subtasks.length && toggleTask(task.subtasks)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        toggleTask(this.tasks);
-        this.saveAndRender();
-      }
-
-      handleDrop(e) {
-        e.preventDefault();
-        const draggedId = e.dataTransfer.getData('text/plain');
-        const dropTarget = e.target.closest('.task-item');
-        if (e.target.id === 'dropZoneTop') {
-          this.moveTaskToTop(draggedId);
-          return;
-        }
-        if (dropTarget && draggedId !== dropTarget.dataset.taskId) {
-          this.reorderTasks(draggedId, dropTarget.dataset.taskId);
+      return false;
+    };
+    findAndToggle(this.tasks);
+    this.saveAndRender();
+  }
+  toggleAllTasks() {
+    this.allExpanded = !this.allExpanded;
+    const toggleAll = tasks => {
+      for (let task of tasks) {
+        if (task.subtasks && task.subtasks.length) {
+          task.expanded = this.allExpanded;
+          toggleAll(task.subtasks);
         }
       }
-
-      reorderTasks(draggedId, targetId) {
-        if (!targetId) {
-          this.moveTaskToTop(draggedId);
-          return;
-        }
-        const findAndRemoveTask = (tasks) => {
-          for (let i = 0; i < tasks.length; i++) {
-            if (tasks[i].id === draggedId) {
-              return tasks.splice(i, 1)[0];
-            }
-            if (tasks[i].subtasks && tasks[i].subtasks.length) {
-              const found = findAndRemoveTask(tasks[i].subtasks);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-        const insertTask = (tasks, task) => {
-          for (let i = 0; i < tasks.length; i++) {
-            if (tasks[i].id === targetId) {
-              tasks.splice(i, 0, task);
-              return !0;
-            }
-            if (tasks[i].subtasks && tasks[i].subtasks.length && insertTask(tasks[i].subtasks, task)) {
-              return !0;
-            }
-          }
-          return !1;
-        };
-        const draggedTask = findAndRemoveTask(this.tasks);
-        if (draggedTask) {
-          insertTask(this.tasks, draggedTask);
-          this.saveAndRender();
-        }
-      }
-
-      saveAndRender() {
-        localStorage.setItem('tasks', JSON.stringify(this.tasks));
-        this.render();
-      }
-
-      render() {
-        const taskList = document.getElementById('taskList');
-        const tasksToRender = this.tasks.filter(task => {
-          if (this.showCompleted) {
-            return task.completed;
-          } else {
-            return !task.completed;
-          }
-        });
-        taskList.innerHTML = tasksToRender.map(task => this.renderTask(task)).join('');
-      }
-
-      renderTask(task, level = 0) {
-        if (!task) return '';
-        const completionStats = this.calculateCompletion(task);
-        const hasSubtasks = task.subtasks && task.subtasks.length > 0;
-        return `
+    };
+    toggleAll(this.tasks);
+    document.getElementById('toggleAllTasks').textContent = this.allExpanded ? 'Colapsar Todo' : 'Expandir Todo';
+    this.saveAndRender();
+  }
+  renderTask(task, level = 0) {
+    if (!task) return '';
+    const completionStats = this.calculateCompletion(task);
+    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+    return `
       <li class="task-item ${task.completed ? 'completed' : ''}" 
           data-task-id="${task.id}" 
           draggable="true">
         <div class="task-header">
           <span class="drag-handle">☰</span>
-          ${(!hasSubtasks) ? `<input type="checkbox"
-${task.completed ? 'checked' : ''}
-onchange="taskManager.toggleComplete('${task.id}')">` : ''}
+          ${!hasSubtasks ? `<input type="checkbox"
+            ${task.completed ? 'checked' : ''}
+            onchange="taskManager.toggleComplete('${task.id}')">` : ''}
           <h3 class="task-title" 
-          contenteditable="true" 
-          onblur="taskManager.updateTaskTitle('${task.id}', this.textContent)">${task.title}</h3>
-        <span class="task-date">
-          ${this.formatDate(task.startDate)} - 
-          <span class="date-text" onclick="taskManager.promptEndDate('${task.id}')">
-            ${this.formatDate(task.endDate)}
+              contenteditable="true" 
+              onclick="if(this.textContent.trim() === 'Nueva tarea') this.selectAllText()"
+              onkeydown="if(event.key === 'Enter') {event.preventDefault(); this.blur();}"
+              onblur="taskManager.updateTaskTitle('${task.id}', this.textContent)">
+            ${task.title}
+          </h3>
+          <span class="task-date">
+            ${this.formatDate(task.startDate)} - 
+            <span class="date-text" onclick="taskManager.promptEndDate('${task.id}')">
+              ${this.formatDate(task.endDate)}
+            </span>
           </span>
-        </span>
           <span class="task-percentage">
-            ${completionStats.percentage}% completado
+            ${task.subtasks && task.subtasks.length > 0 ? completionStats.percentage : task.completed ? 100 : 0}% completado
           </span>
-          ${hasSubtasks ? `<button class="toggle-btn" onclick="taskManager.toggleExpanded('${task.id}')">${task.expanded ? '▼' : '▶'}</button>` : ''}
+          ${hasSubtasks ? `
+            <button class="toggle-btn" onclick="taskManager.toggleExpanded('${task.id}')">
+              ${task.expanded ? '▼' : '▶'}
+            </button>` : ''}
           <button class="add-subtask-btn" onclick="taskManager.addTask('${task.id}')">+</button>
           <button class="delete-btn" onclick="taskManager.deleteTask('${task.id}')">×</button>
         </div>
-        ${hasSubtasks ? `<ul class="subtask-list ${task.expanded ? 'expanded' : ''}">${task.subtasks.map(subtask => this.renderTask(subtask, level + 1)).join('')}</ul>` : ''}
+        ${hasSubtasks ? `
+          <ul class="subtask-list ${task.expanded ? 'expanded' : ''}">
+            ${task.subtasks.map(subtask => this.renderTask(subtask, level + 1)).join('')}
+          </ul>` : ''}
       </li>
     `;
-      }
-
-      formatDate(dateStr) {
-        const date = new Date(dateStr);
-        const days = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
-        const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-
-        return `${days[date.getDay()]}, ${date.getDate()}, ${months[date.getMonth()]}, ${date.getFullYear()}`;
-      }
-
-      toggleCompletedView() {
-        this.showCompleted = !this.showCompleted;
-        document.getElementById('toggleCompleted').textContent = this.showCompleted ? 'Ver Pendientes' : 'Ver Completadas';
-        document.getElementById('viewTitle').textContent = this.showCompleted ? 'Tareas completadas' : 'Tareas pendientes';
-        this.render();
-      }
-
-      updateParentTasksCompletion() {
-        this.tasks.forEach(task => this.updateTaskCompletion(task));
+  }
+  saveAndRender() {
+    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+    this.render();
+    this.updateTotalPercentage();
+  }
+  render() {
+    const taskList = document.getElementById('taskList');
+    taskList.innerHTML = '';
+    this.tasks.forEach(task => {
+      this.calculateCompletion(task);
+    });
+    const tasksToShow = this.tasks.filter(task => this.showCompleted ? task.completed : !task.completed);
+    tasksToShow.forEach(task => {
+      taskList.innerHTML += this.renderTask(task);
+    });
+  }
+  calculateCompletion(task) {
+    if (task.subtasks && task.subtasks.length > 0) {
+      let completedCount = 0;
+      let totalCount = task.subtasks.length;
+      task.subtasks.forEach(subtask => {
+        const subtaskStats = this.calculateCompletion(subtask);
+        if (subtaskStats.completed === subtaskStats.total) {
+          completedCount++;
+        }
+      });
+      const percentage = Math.round(completedCount / totalCount * 100);
+      task.completed = percentage === 100;
+      return {
+        completed: completedCount,
+        total: totalCount,
+        percentage: percentage
+      };
+    }
+    return {
+      completed: task.completed ? 1 : 0,
+      total: 1,
+      percentage: task.completed ? 100 : 0
+    };
+  }
+  formatDate(dateString) {
+    const date = new Date(dateString);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  }
+  promptEndDate(taskId) {
+    const newDate = prompt('Ingrese la nueva fecha de fin');
+    if (newDate) {
+      const task = this.tasks.find(t => t.id === taskId);
+      if (task) {
+        task.endDate = newDate;
+        this.saveAndRender();
       }
     }
-    const taskManager = new TaskManager();
-  </script>
-</body>
+  }
+  updateTotalPercentage() {
+    let totalCompleted = 0;
+    let totalTasks = 0;
+    const calculateTotals = tasks => {
+      tasks.forEach(task => {
+        if (task.subtasks && task.subtasks.length) {
+          calculateTotals(task.subtasks);
+        } else {
+          totalTasks++;
+          if (task.completed) {
+            totalCompleted++;
+          }
+        }
+      });
+    };
+    calculateTotals(this.tasks);
+    const percentage = totalTasks > 0 ? Math.round(totalCompleted / totalTasks * 100) : 0;
+    document.getElementById('totalPercentage').textContent = `${percentage}% completado en total`;
+  }
+}
+const taskManager = new TaskManager();
+HTMLElement.prototype.selectAllText = function () {
+  const range = document.createRange();
+  range.selectNodeContents(this);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+};</script>
 
+</body>
 </html>
