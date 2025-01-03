@@ -183,8 +183,13 @@ h2 {
   background-color: rgba(76, 175, 80, 0.1);
 }
 
+.task-item.dragging {
+  opacity: 0.5;
+}
+
 .task-item.drag-over {
-  border: 2px dashed var(--primary);
+  border: 2px dashed var(--primary) !important;
+  padding: 10px;
 }
 
 .date-input {
@@ -364,7 +369,7 @@ li.task-item::marker {
     this.saveAndRender();
   }
   deleteTask(taskId) {
-    const deleteFromTasks = (tasks) => {
+    const deleteFromTasks = tasks => {
       for (let i = 0; i < tasks.length; i++) {
         if (tasks[i].id === taskId) {
           tasks.splice(i, 1);
@@ -378,14 +383,24 @@ li.task-item::marker {
       }
       return false;
     };
-
     deleteFromTasks(this.tasks);
     this.saveAndRender();
   }
   moveTaskToTop(taskId) {
-    const task = this.tasks.find(t => t.id === taskId);
+    const findAndRemoveTask = (tasks, id) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === id) {
+          return tasks.splice(i, 1)[0];
+        }
+        if (tasks[i].subtasks) {
+          const found = findAndRemoveTask(tasks[i].subtasks, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const task = findAndRemoveTask(this.tasks, taskId);
     if (task) {
-      this.tasks = this.tasks.filter(t => t.id !== taskId);
       this.tasks.unshift(task);
       this.saveAndRender();
     }
@@ -393,7 +408,7 @@ li.task-item::marker {
   handleDragStart(e) {
     const taskItem = e.target.closest('.task-item');
     if (taskItem) {
-      this.draggedTask = taskItem.id;
+      this.draggedTask = taskItem.dataset.taskId;
       taskItem.classList.add('dragging');
     }
   }
@@ -420,16 +435,49 @@ li.task-item::marker {
   handleDrop(e) {
     e.preventDefault();
     const taskItem = e.target.closest('.task-item');
-    if (taskItem && this.draggedTask && this.draggedTask !== taskItem.id) {
-      this.moveTask(this.draggedTask, taskItem.id);
+    if (taskItem) {
+      taskItem.classList.remove('drag-over');
+    }
+    if (taskItem && this.draggedTask && this.draggedTask !== taskItem.dataset.taskId) {
+      this.moveTask(this.draggedTask, taskItem.dataset.taskId);
     }
   }
   moveTask(fromId, toId) {
-    const fromIndex = this.tasks.findIndex(t => t.id === fromId);
-    const toIndex = this.tasks.findIndex(t => t.id === toId);
-    if (fromIndex !== -1 && toIndex !== -1) {
-      const [task] = this.tasks.splice(fromIndex, 1);
-      this.tasks.splice(toIndex, 0, task);
+    const findAndRemoveTask = (tasks, id) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === id) {
+          return tasks.splice(i, 1)[0];
+        }
+        if (tasks[i].subtasks) {
+          const found = findAndRemoveTask(tasks[i].subtasks, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const findInsertLocation = (tasks, id) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === id) {
+          return {
+            tasks,
+            index: i
+          };
+        }
+        if (tasks[i].subtasks) {
+          const found = findInsertLocation(tasks[i].subtasks, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const task = findAndRemoveTask(this.tasks, fromId);
+    if (task) {
+      const location = findInsertLocation(this.tasks, toId);
+      if (location) {
+        location.tasks.splice(location.index + 1, 0, task);
+      } else {
+        this.tasks.push(task);
+      }
       this.saveAndRender();
     }
   }
@@ -525,7 +573,7 @@ li.task-item::marker {
           </span>
           ${hasSubtasks ? `
             <button class="toggle-btn" onclick="taskManager.toggleExpanded('${task.id}')">
-              ${task.expanded ? '▶' : '▼'}
+              ${task.expanded ? '▼' : '▶'}
             </button>` : ''}
           <button class="add-subtask-btn" onclick="taskManager.addTask('${task.id}')">+</button>
           <button class="delete-btn" onclick="taskManager.deleteTask('${task.id}')">×</button>
