@@ -1,5 +1,4 @@
-<html>
-<head>
+<html><head><base href="https://adolfsan99.github.io/miniprograma/todo.html">
 <title>List.html</title>
 <style>
 :root {
@@ -222,7 +221,12 @@ li.task-item::marker {
 
 <script>class TaskManager {
   constructor() {
-    this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    try {
+      this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    } catch (e) {
+      console.warn('LocalStorage access failed:', e);
+      this.tasks = [];
+    }
     this.showCompleted = false;
     this.draggedTask = null;
     this.allExpanded = false;
@@ -509,7 +513,11 @@ li.task-item::marker {
     `;
   }
   saveAndRender() {
-    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+    try {
+      localStorage.setItem('tasks', JSON.stringify(this.tasks));
+    } catch (e) {
+      console.warn('LocalStorage save failed:', e);
+    }
     this.render();
     this.updateTotalPercentage();
   }
