@@ -222,10 +222,10 @@ li.task-item::marker {
 <script>class TaskManager {
   constructor() {
     try {
-      const savedTasks = localStorage.getItem('tasks');
+      const savedTasks = window.localStorage.getItem('tasks');
       this.tasks = savedTasks ? JSON.parse(savedTasks) : [];
     } catch (e) {
-      console.warn('LocalStorage access failed:', e);
+      console.warn('Error loading from localStorage:', e);
       this.tasks = [];
     }
     this.showCompleted = false;
@@ -364,7 +364,22 @@ li.task-item::marker {
     this.saveAndRender();
   }
   deleteTask(taskId) {
-    this.tasks = this.tasks.filter(t => t.id !== taskId);
+    const deleteFromTasks = (tasks) => {
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === taskId) {
+          tasks.splice(i, 1);
+          return true;
+        }
+        if (tasks[i].subtasks && tasks[i].subtasks.length) {
+          if (deleteFromTasks(tasks[i].subtasks)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
+    deleteFromTasks(this.tasks);
     this.saveAndRender();
   }
   moveTaskToTop(taskId) {
@@ -524,9 +539,10 @@ li.task-item::marker {
   }
   saveAndRender() {
     try {
-      localStorage.setItem('tasks', JSON.stringify(this.tasks));
+      const tasksJson = JSON.stringify(this.tasks);
+      window.localStorage.setItem('tasks', tasksJson);
     } catch (e) {
-      console.warn('LocalStorage save failed:', e);
+      console.warn('Error saving to localStorage:', e);
     }
     this.render();
     this.updateTotalPercentage();
