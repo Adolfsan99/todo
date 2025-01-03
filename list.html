@@ -525,7 +525,7 @@ li.task-item::marker {
           </span>
           ${hasSubtasks ? `
             <button class="toggle-btn" onclick="taskManager.toggleExpanded('${task.id}')">
-              ${task.expanded ? '▼' : '▶'}
+              ${task.expanded ? '▶' : '▼'}
             </button>` : ''}
           <button class="add-subtask-btn" onclick="taskManager.addTask('${task.id}')">+</button>
           <button class="delete-btn" onclick="taskManager.deleteTask('${task.id}')">×</button>
