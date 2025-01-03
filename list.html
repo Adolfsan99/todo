@@ -222,7 +222,8 @@ li.task-item::marker {
 <script>class TaskManager {
   constructor() {
     try {
-      this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      const savedTasks = localStorage.getItem('tasks');
+      this.tasks = savedTasks ? JSON.parse(savedTasks) : [];
     } catch (e) {
       console.warn('LocalStorage access failed:', e);
       this.tasks = [];
@@ -347,11 +348,20 @@ li.task-item::marker {
     this.saveAndRender();
   }
   updateTaskTitle(taskId, newTitle) {
-    const task = this.tasks.find(t => t.id === taskId);
-    if (task) {
-      task.title = newTitle;
-      this.saveAndRender();
-    }
+    const updateTitle = tasks => {
+      for (let task of tasks) {
+        if (task.id === taskId) {
+          task.title = newTitle;
+          return true;
+        }
+        if (task.subtasks && updateTitle(task.subtasks)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    updateTitle(this.tasks);
+    this.saveAndRender();
   }
   deleteTask(taskId) {
     this.tasks = this.tasks.filter(t => t.id !== taskId);
@@ -563,11 +573,20 @@ li.task-item::marker {
   promptEndDate(taskId) {
     const newDate = prompt('Ingrese la nueva fecha de fin');
     if (newDate) {
-      const task = this.tasks.find(t => t.id === taskId);
-      if (task) {
-        task.endDate = newDate;
-        this.saveAndRender();
-      }
+      const updateDate = tasks => {
+        for (let task of tasks) {
+          if (task.id === taskId) {
+            task.endDate = newDate;
+            return true;
+          }
+          if (task.subtasks && updateDate(task.subtasks)) {
+            return true;
+          }
+        }
+        return false;
+      };
+      updateDate(this.tasks);
+      this.saveAndRender();
     }
   }
   updateTotalPercentage() {
