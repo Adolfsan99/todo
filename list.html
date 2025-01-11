@@ -12,11 +12,12 @@
 }
 
 body {
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: "Consolas", monospace;
   margin: 0;
   padding: 20px;
   background: var(--secondary);
   color: var(--text);
+  font-size: 11px;
 }
 
 .container {
@@ -26,24 +27,27 @@ body {
 
 h1 {
   color: var(--primary);
-  font-size: 2.2em;
+  font-size: 2.4em;
   margin-bottom: 4px;
   font-weight: 600;
+  font-family: "Consolas", monospace;
 }
 
 h2 {
   color: var(--text);
-  font-size: 1.4em;
+  font-size: 1.6em;
   margin-bottom: 20px;
   opacity: 0.9;
   font-weight: 500;
+  font-family: "Consolas", monospace;
 }
 
 .total-percentage {
+  font-size: 1.2em;
   color: var(--primary);
-  font-size: 1.1em;
   margin-top: -15px;
   margin-bottom: 20px;
+  font-family: "Consolas", monospace;
 }
 
 .task-controls {
@@ -54,19 +58,21 @@ h2 {
 
 .btn {
   padding: 12px 20px;
-  border: none;
+  border: 2px solid #00d26a;
   border-radius: 8px;
   cursor: pointer;
-  color: var(--secondary);
+  color: white;
   font-weight: 600;
-  background: #00d26a;
-  font-size: 0.95em;
+  background: transparent;
+  font-size: 11px;
+  font-family: "Consolas", monospace;
 }
 
 .btn:hover {
   background: black;
   color: white;
   opacity: 0.9;
+  border: 2px solid transparent;
 }
 
 .task-list {
@@ -89,7 +95,7 @@ h2 {
 }
 
 .task-title {
-  font-size: 1.1em;
+  font-size: 11px;
   font-weight: 300;
   flex-grow: 1;
   margin: 0;
@@ -97,17 +103,18 @@ h2 {
   border: 1px solid #535353;
   border-top: none;
   border-right: none;
+  font-family: "Consolas", monospace;
 }
 
 .task-date {
-  font-size: 0.9em;
+  font-size: 11px;
   color: #aaa;
 }
 
 .task-percentage {
   color: var(--primary);
   font-weight: 500;
-  font-size: 0.9em;
+  font-size: 11px;
   margin-left: 12px;
 }
 
@@ -215,10 +222,10 @@ li.task-item::marker {
     <div id="dropZoneTop" class="drop-zone"></div>
     <div class="task-controls">
       <button id="addTask" class="btn">+ Nueva Tarea</button>
+      <button id="toggleAllTasks" class="btn">Expandir Todo</button>
       <button id="toggleCompleted" class="btn">Ver Completadas</button>
       <button id="exportData" class="btn">Exportar JSON</button>
       <button id="importData" class="btn">Importar JSON</button>
-      <button id="toggleAllTasks" class="btn">Expandir Todo</button>
       <input type="file" id="importFile" style="display: none" accept=".json">
     </div>
     <ul id="taskList" class="task-list"></ul>
@@ -372,6 +379,8 @@ li.task-item::marker {
     const deleteFromTasks = tasks => {
       for (let i = 0; i < tasks.length; i++) {
         if (tasks[i].id === taskId) {
+          const deletedTask = tasks[i];
+          console.log('Tarea eliminada:', deletedTask.title);
           tasks.splice(i, 1);
           return true;
         }
