@@ -1,0 +1,30 @@
+<html>
+<head>
+  <title>Timelist</title>
+  <link rel="stylesheet" href="timestyles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>⌚Timelist</h1>
+    <h2 id="viewTitle">Tareas Pendientes</h2>
+    <h2 class="total-percentage" id="totalPercentage">0% completado en total</h2>
+    <div id="dropZoneTop" class="drop-zone"></div>
+    
+    <div class="task-controls">
+      <button id="addTask" class="btn">+ Nueva Tarea</button>
+      <button id="toggleAllTasks" class="btn">Expandir Todo</button>
+      <button id="toggleCompleted" class="btn">Ver Completadas</button>
+      <button id="exportData" class="btn">Exportar JSON</button>
+      <button id="importData" class="btn">Importar JSON</button>
+      <input type="file" id="importFile" style="display: none" accept=".json">
+    </div>
+
+    <ul id="taskList" class="task-list"></ul>
+  </div>
+
+  <script src="timemanager.js"></script>
+  <script>
+    const taskManager = new TaskManager();
+  </script>
+</body>
+</html>
